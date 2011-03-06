@@ -1,0 +1,38 @@
+/* $Id: */
+
+
+/**
+ * Images format by the sorting function.
+ */
+div.ga-sort-item-image {
+    cursor: move;
+    float: left;
+    height: 70px;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    width: 70px;
+}
+div.ga-sort-item-image:hover {
+    background-color: #E0E0E0;
+    outline-color: #98C4DF;
+    outline-style: dashed;
+    outline-width: 1px;
+}
+div.ga-sort-item-image img {
+    height: 50px;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    width: 50px;
+}

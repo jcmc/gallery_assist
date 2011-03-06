@@ -1,0 +1,360 @@
+<?php
+// $Id: gallery_assist_ui.module,v 1.1.2.1 2011/01/11 08:46:40 jcmc Exp $ 
+
+/**
+ * @file 
+ */
+
+/**
+ * Implementation of hook_help() 
+ */
+function gallery_assist_ui_help($path, $arg) {
+
+}
+
+/**
+ * Implementation of hook_perm()
+ */
+function gallery_assist_ui_perm() {
+  $perm = array(
+    'access sort images tab'
+  );
+
+  return $perm;
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function gallery_assist_ui_menu() {
+  $items = array();
+
+  // Gallery as secundary tab from edit.
+  $items['node/%node/edit/node'] = array(
+    'title' => 'Article',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+
+  $items['node/%node/edit/ga_sort'] = array(
+    'title' => 'Sort images',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gallery_assist_ui_sorting_items', 1),
+    'access callback' => 'gallery_assist_ui_sort_check_access',
+    'access arguments' => array(3, 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+
+  $items['node/%node/edit/ga_sort/no_jquery'] = array(
+    'title' => 'Sort images',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gallery_assist_ui_sorting_items_standard', 1),
+    'access callback' => 'gallery_assist_ui_sort_check_access',
+    'access arguments' => array(3, 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+
+  $items['gallery_assist/ga_sort/js'] = array(
+    'title' => 'Gallery settings',
+    'page callback' => 'gallery_assist_ui_sorting_items_js',
+    'access callback' => user_access('access sort images tab'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3
+  );
+
+  return $items;
+}
+
+function gallery_assist_ui_sort_check_access($task, $node) {
+  global $user;
+
+  if ($node->type) {
+    if (user_access('access sort images tab', $user) && variable_get("gallery_assist_{$node->type}", 0) == 1) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+}
+
+/**
+ * Prepare the images for sorting through jquery.ui sorteable functionality.
+ *
+ * @global string $base_url
+ * @global string $base_path
+ * @param array $form_state
+ * @param object $node
+ * @return string Containing the rendered gallery images prepared to be sorted through jquery.ui functionality.
+ */
+function gallery_assist_ui_sorting_items($form_state, $node) {
+  $form = array();
+  $conf =  $node->gallconf[$node->type];
+
+  $form['sort_container'] = array(
+    '#type'  => 'fieldset',
+  );
+
+  // Build links.
+  if (isset($_GET['unlimited']) && $_GET['unlimited'] > 0) {
+    $title = 'limited';
+    $attributes = array(
+      'attributes' => array(
+        'title' => 'Use pager in case of great number of images.',
+        'class' => 'button'
+      )
+    );
+    $value = '<strong>unlimited</strong> | '. l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
+    $links[] = '<strong>unlimited</strong>';
+    $links[] = l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
+  }
+  else {
+    $title = 'unlimited';
+    $attributes = array(
+      'query' => array(
+        'unlimited' => 1
+      ),
+      'attributes' => array(
+        'title' => 'Load all images.'
+      )
+    );
+    $value = l($title, "node/{$node->nid}/edit/ga_sort", $attributes) .' | <strong>limited</strong>';
+    $links[] = l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
+    $links[] = '<strong>limited</strong>';
+  }
+  $links[] = '<button onclick="alert($(\'DIV#sort-items\').sortable(\'serialize\'))" type="button">Serialize!</button>';
+
+  $form['sort_container']['links'] = array(
+    '#type' => 'markup',
+    '#value' => implode(' | ', $links)
+  );
+
+  // Build the sort container.
+  $myitem = array();
+  foreach ($node->gallitems as $pid => $item) {
+    $item->my_img_attr = array(
+      'style' => 'width:50px;height:50px;'
+    );
+    $page = isset($_GET['page']) ? $_GET['page'] : 0;
+    $unlimited = isset($_GET['unlimited']) ? $_GET['unlimited'] : 0;
+    $myitem_attr = array(
+      'id' => "{$node->nid}-{$page}-{$unlimited}-sort_item_{$pid}",
+      'class' => 'ga-sort-item-image',
+      'style' => 'background-image: none;'
+    );
+    $myitem[] = '<div '. drupal_attributes($myitem_attr) .'>' .gallery_assist_prepare_thms($item, $node->gallconf[$node->type]) .'</div>';
+  }
+
+  $attributes = array(
+    'id' => 'sort-items'
+  );
+  $form['sort_container']['#suffix'] = '<div '. drupal_attributes($attributes) .'>' .implode("\n", $myitem) .'</div>';
+
+  $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
+  $form['sort_container']['#suffix'] .= theme('pager', NULL, $pager_limit, 0, NULL, 5);
+
+  // Include css and js files.
+  global $base_url, $base_path;
+  drupal_add_css(drupal_get_path('module', 'gallery_assist_ui') .'/css/gallery_assist_ui.css');
+  jquery_ui_add(array('ui.draggable', 'ui.droppable', 'ui.sortable'));
+  drupal_add_js(array('ga_settings' => array('base_url' => $base_url)), 'setting');
+  drupal_add_js(drupal_get_path('module', 'gallery_assist_ui') .'/js/gallery_assist_ui.js');
+
+  return $form;
+}
+
+function gallery_assist_ui_sorting_items_standard($form_state, $node) {
+  $form = array();
+  $conf =  $node->gallconf[$node->type];
+  $conf['thumbnail_size'] = 50;
+
+  $form = array(
+    '#theme' => 'gallery_assist_form_new',
+    '#cache' => TRUE,
+    '#weight' => 0,
+  );
+  $form['gallery_items']['#theme'] = 'gallery_assist_ui_sort_form_current';
+  $form['gallery_items']['#tree'] = TRUE;
+
+  // Build links.
+  if (isset($_GET['unlimited']) && $_GET['unlimited'] > 0) {
+    $title = 'limited';
+    $attributes = array(
+      'attributes' => array(
+        'title' => 'Use pager in case of great number of images.',
+        'class' => 'button'
+      )
+    );
+    $value = '<strong>unlimited</strong> | '. l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
+    $links[] = '<strong>unlimited</strong>';
+    $links[] = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
+  }
+  else {
+    $title = 'unlimited';
+    $attributes = array(
+      'query' => array(
+        'unlimited' => 1
+      ),
+      'attributes' => array(
+        'title' => 'Load all images.'
+      )
+    );
+    $value = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes) .' | <strong>limited</strong>';
+    $links[] = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
+    $links[] = '<strong>limited</strong>';
+  }
+  $links[] = '<button onclick="alert($(\'DIV#sort-items\').sortable(\'serialize\'))" type="button">Serialize!</button>';
+
+  $form['sort_container_top'] = array(
+    '#type' => 'fieldset',
+    '#weight' => -50
+  );
+
+  $form['sort_container_top']['links'] = array(
+    '#type' => 'markup',
+    '#value' => implode(' | ', $links)
+  );
+
+  // Build the sort container.
+  foreach ($node->gallitems as $pid => $item) {
+    $img = image_get_info($item->tpath);
+    $img = gallery_assist_image_more_info($type, $img, $conf);
+    $direction = $img['pos'] == h ? 'width' : 'height';
+    $img_attr = array(
+      $direction => $conf['thumbnail_size']
+    );
+    $image = theme('image', $item->tpath, $item->palt, $item->ptitle, $img_attr, FALSE);
+
+    $form['gallery_items'][$pid]['item']      = array('#value' => $image);
+    $form['gallery_items'][$pid]['test']      = array('#value' => $item->ptitle); //
+    $form['gallery_items'][$pid]['uploaded']  = array('#value' => $item->timestamp); //
+    $form['gallery_items'][$pid]['weight']    = array(
+      '#type' => 'weight',
+      '#delta' => count($node->gallitems),
+      '#default_value' => $item->weight,
+      '#attributes' => array(
+        'class' => 'gallery-assist-weight'
+      )
+    );
+  }
+  $form['gallery_items']['#weight'] = 20;
+
+  $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
+  $form['gallery_items']['#prefix'] = theme('pager', NULL, $pager_limit, 0, NULL, 5);
+  $form['gallery_items']['#suffix'] = theme('pager', NULL, $pager_limit, 0, NULL, 5);
+
+  $form['sort_container_bottom'] = array(
+    '#type' => 'fieldset',
+    '#weight' => 50
+  );
+
+  $form['sort_container_bottom']['links'] = array(
+    '#type' => 'markup',
+    '#value' => implode(' | ', $links)
+  );
+
+  return $form;
+}
+
+function theme_gallery_assist_ui_sort_form_current($form) {
+  $header = array('', t('Image'), t('Title'), t('Uploaded'), t('Weight'));
+
+  // Define the output as draggable table
+  drupal_add_tabledrag('gallery-assist-list', 'order', 'sibling', 'gallery-assist-weight');
+
+  foreach (element_children($form) as $key) {
+    // Add class to group weight fields for drag and drop.
+    $form[$key]['weight']['#attributes']['class'] = 'gallery-assist-weight';
+    // Fill the table cells
+    $row = array('');
+    $row[] = array('data' => drupal_render($form[$key]['item']), 'style' => 'text-align: center;');
+    $row[] = drupal_render($form[$key]['test']);
+    $row[] = array('data' => drupal_render($form[$key]['uploaded']), 'style' => 'width: 100%;');
+    $row[] = drupal_render($form[$key]['weight']);
+    // Build the row with dragable class
+    $rows[] = array('data' => $row, 'class' => 'draggable');
+  }
+
+  $output  = theme('table', $header, $rows, array('id' => 'gallery-assist-list'));
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function gallery_assist_ui_theme() {
+  return array(
+    'gallery_assist_ui_sort_form_current' => array(
+      'arguments' => array('form' => NULL)
+    )
+  );
+}
+
+/**
+ * Save the sorted gallery items.
+ */
+function gallery_assist_ui_sorting_items_js() {
+
+  // Build an array with the new ordered items.
+  $sort_results = explode(',', $_POST['ga_sort_results']);
+
+  // Extract data from first item and check the cover value.
+  // Set the image to gallery cover in case ga_cover_sticky setting is 1 and the image is not the current gallery cover.
+  $x = preg_replace('/sort_item_/', '', $sort_results[0]);
+  list($fnid, $fpage, $funlimited, $fpid) = explode('-', $x);
+  $node = node_load($fnid);
+  $conf = $node->gallconf[$node->type];
+  if ($fpage == 0 && $node->gallitems[$fpid]->cover == 0 && $conf['ga_cover_sticky'] == 1) {
+    gallery_assist_cover_updater($node, $fpid);
+  }
+
+  // Build an simple array with pairs pid:weight.
+  foreach ($sort_results as $weight => $v) {
+    if (!empty($v)) {
+      $x = preg_replace('/sort_item_/', $replacement, $v);
+      list($nid, $page, $unlimited, $pid) = explode('-', $x);
+      $basket[$pid] = $node->gallitems[$pid]->weight;
+    }
+  }
+
+  if ($conf['ga_db_order_field'] == 'a.weight' && $conf['ga_db_order'] == 'ASC') {
+    $i = min($basket);
+  }
+  if ($conf['ga_db_order_field'] == 'a.weight' && $conf['ga_db_order'] == 'DESC') {
+    $i = max($basket);
+  }
+  foreach ($basket as $pid => $w) {
+    db_query("UPDATE {gallery_assist_item} SET weight = %d WHERE pid = %d", $i, $pid);
+    if ($conf['ga_db_order_field'] == 'a.weight' && $conf['ga_db_order'] == 'ASC') {
+      ++$i;
+    }
+    if ($conf['ga_db_order_field'] == 'a.weight' && $conf['ga_db_order'] == 'DESC') {
+      --$i;
+    }
+  }
+
+  db_query("DELETE FROM {cache_gallery_assist_data} WHERE cid = '%s'", $node->nid);
+
+  print drupal_to_js(array('status' => TRUE, 'data' => 'aqui lleguè'));
+  exit;
+}
+
+/**
+ * Implementation of hook_block() 
+ */
+function gallery_assist_ui_block($op='list', $delta=0, $edit=array()) {
+  switch ($op) {
+    case 'list':
+
+    case 'view':
+
+    case 'configure':
+
+    case 'save':
+
+  }
+}

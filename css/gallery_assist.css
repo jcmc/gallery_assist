@@ -1,4 +1,4 @@
-/* $Id: gallery_assist.css,v 1.36 2010/12/01 16:10:08 jcmc Exp $ */
+/* $Id: gallery_assist.css,v 1.1.2.23 2011/01/11 08:46:40 jcmc Exp $ */
 
 #gallery-assist-users-help {
   margin: 0 20px;
@@ -405,4 +405,13 @@ body.layout-jello .page {
 }
 .gab-item-lnk a img:hover {
   opacity:1;
+}
+
+.ga-cover-bg {
+  background-image: url(../images/cover_bg_gray.png);
+}
+
+.ga-check-all, .ga-uncheck-all {
+  font-weight: bold;
+  cursor: pointer;
 }

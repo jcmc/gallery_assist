@@ -26,3 +26,11 @@ Drupal.behaviors.ga_warning_by_change_caption = function (context) {
   });
 }
 
+Drupal.behaviors.ga_check_all = function (context) {
+  $(".ga-check-all").click(function () {
+    $("#gallery-assist-list .form-checkbox").attr("checked", true);
+  });
+  $(".ga-uncheck-all").click(function () {
+    $("#gallery-assist-list .form-checkbox").attr("checked", false);
+  });
+}

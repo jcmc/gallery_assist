@@ -1,0 +1,20 @@
+<?php
+// $Id: gallery_assist_ui.install,v 1.1.2.1 2011/01/11 08:46:40 jcmc Exp $ 
+
+/**
+ * @file 
+ */
+
+/**
+ * Implementation of hook_install() 
+ */
+function gallery_assist_ui_install() {
+
+}
+
+/**
+ * Implementation of hook_uninstall() 
+ */
+function gallery_assist_ui_uninstall() {
+
+}

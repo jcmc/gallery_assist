@@ -1,4 +1,4 @@
-// $Id: README.txt,v 1.25 2010/10/30 14:28:02 jcmc Exp $
+// $Id: README.txt,v 1.1.2.12 2011/01/11 08:46:40 jcmc Exp $
 
 Gallery Assist
 --------------

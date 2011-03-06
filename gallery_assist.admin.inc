@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.42 2010/12/01 16:10:08 jcmc Exp $
+// $Id: gallery_assist.admin.inc,v 1.1.2.34 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file
@@ -468,6 +468,14 @@ $test = module_invoke('image', 'image_get_presets');
     '#default_value' => variable_get("hide_node_first_notice_for_{$type}", FALSE),
     '#description' => t('Hide the notice "This node must be saved FIRST ..." that appears on the top of the creation of a node. <br />If module "<a href="@mnb" target="_blank">More node buttos</a>" is installed and you have enabled the "<a href="@screens" target="_blank">Save and continue</a>" button is this notice not more necessary.', array('@mnb' => url('http://www.drupal.org/project/more_node_buttons'), '@screens' => url('http://www.assist-series.com/content/use-module-more-node-buttons-ga'))),
     '#size' => 8
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_others']['gallery_assist_'. $type .'_ga_cover_sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Cover Sticky'),
+    '#default_value' => $settings['ga_cover_sticky'],
+    '#description' => t('Sticky cover images at the top of images lists or pages.'),
+    '#size' => 10
   );
 
   if (module_exists('gallery_assist_item')) {

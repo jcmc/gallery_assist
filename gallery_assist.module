@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.module,v 1.78 2010/12/02 14:39:55 jcmc Exp $
+// $Id: gallery_assist.module,v 1.1.2.72 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file
@@ -68,14 +68,6 @@ function gallery_assist_help($path, $arg) {
     break;
   }
 }
-
-/**
- * Implementation of hook_link_alter().
- *
- */
-//function gallery_assist_link_alter(&$links, $node) {
-//
-//}
 
 /**
  * Help for users with create gallery_assist permition.
@@ -454,8 +446,59 @@ function gallery_assist_menu() {
     'file' => 'gallery_assist.admin.inc',
   );
 
+  // Set an item to gallery cover.
+  $items['ga_item_to_cover/%node/%'] = array(
+    'page callback' => 'gallery_assist_set_item_to_cover',
+    'page arguments' => array(1, 2),
+    'access callback' => 'gallery_assist_check_callback_permission',
+    'access arguments' => array(1, 2),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
+
+/**
+ * New implementation.
+ */
+
+/**
+ * @TODO: GA: Functionality to check and set the access from GA menus callbacks.
+ *
+ * @global <type> $user
+ * @param <type> $task
+ * @param <type> $node
+ * @param <type> $pid
+ * @return <type>
+ */
+function gallery_assist_check_callback_permission($task, $node, $pid = NULL) {
+  global $user;
+
+  return TRUE;
+}
+
+/**
+ * Set the gallery cover directly from the gallery page view.
+ *
+ * @global <type> $user
+ * @param <type> $node
+ * @param <type> $pid
+ */
+function gallery_assist_set_item_to_cover($node, $pid) {
+  global $user;
+
+  if ($node->gallitems[$pid]->cover == 0) {
+    gallery_assist_cover_updater($node, $pid);
+    db_query("DELETE FROM {cache_gallery_assist_data} WHERE cid = %d", $node->nid);
+  }
+
+  $url = $_SERVER['HTTP_REFERER'];
+  drupal_goto($url);
+}
+
+/**
+ * End new implementation.
+ */
 
 /**
  * Add to the form the data from the image that will be deleted.
@@ -584,8 +627,9 @@ function gallery_assist_list_galleries($u) {
   $query = "SELECT
               g.nid,
               g.gref,
+              g.ga_public_status,
               g.data,
-              (SELECT count(distinct(pid)) FROM {gallery_assist_item} where gref = g.gref) counter,
+              g.items AS counter,
               (SELECT pid FROM {gallery_assist_item} where gref = g.gref order by cover desc limit 1) pid,
               p.tpath,
               n.title,
@@ -611,7 +655,7 @@ function gallery_assist_list_galleries($u) {
   $edit = 0;
   while ($r = db_fetch_object($result)) {
     $r->gallconf[$r->type] = unserialize($r->data);
-    if ($user->uid == 1 || $user->uid == $u->uid || $r->gallconf[$r->type]['ga_public_status'] <> 1) {
+    if ($user->uid == 1 || $user->uid == $u->uid || $r->ga_public_status <> 1) {
       if (gallery_assist_check_access($node)) {
         $c[] = $r;
       }
@@ -634,7 +678,7 @@ function gallery_assist_list_galleries($u) {
     foreach ($c as $id => $r) {
       $ipath = preg_replace('/thm\//', 'img/', $r->tpath);
       $image = theme('image', $ipath, '', '');
-      $title = l($r->title, 'node/'. $r->nid) . ($user->uid == 1 || $user->uid == $u->uid ? "<br />({$pstatus[$r->gallconf[$r->type]['ga_public_status']]})" : "");
+      $title = l($r->title, 'node/'. $r->nid) . ($user->uid == 1 || $user->uid == $u->uid ? "<br />({$pstatus[$r->ga_public_status]})" : "");
       $rows[$id] = array(
         array('data' => $r->counter, 'class' => 'ga-align-right'),
         //array('data' => l($image, 'node/'. $r->nid .'/'. $r->pid, array('html' => TRUE)), 'class' => 'ga-align-center'),
@@ -877,6 +921,7 @@ function gallery_assist_form_alter(&$form, $form_state, $form_id) {
         }
       }
 
+      $node->check_all_links = t('<span class="ga-check-all description">@check_all</span> | <span class="ga-uncheck-all description">@uncheck_all</span>', array('@check_all' => t('check all'), '@uncheck_all' => t('uncheck all')));
       // Upload process form section.
       $form['gallery_assist_item'] = array(
         '#type' => 'fieldset',
@@ -889,7 +934,7 @@ function gallery_assist_form_alter(&$form, $form_state, $form_id) {
         '#prefix' => '<div class="gallery_assist_list">',
         '#suffix' => '</div>',
         '#weight' => $form['title']['#weight'] + 1,
-        '#description' => t('Click Update to upload a new file or to save your changes in this section.'),
+        '#description' => t('Click Update to upload a new file or to save your changes in this section.<br />') . $node->check_all_links,
       );
 
       $form['ref'] = array(
@@ -1008,7 +1053,7 @@ function _gallery_assist_form(&$node) {
   $form['new']['pager_bottom'] = array(
     '#type' => 'markup',
     '#value' => theme('pager', NULL, $pager_limit, 0, NULL, 5),
-    '#weight' => 19,
+    '#weight' => 19
   );
 
 
@@ -1090,6 +1135,8 @@ function _gallery_assist_form(&$node) {
     '#prefix' => '<a name="update-buttom"></a>',
     '#weight' => 24,
   );
+  $form['new']['#prefix'] .= $node->check_all_links;
+  unset($node->check_all_links);
 
   return $form;
 }
@@ -1117,13 +1164,13 @@ function theme_gallery_assist_form_new($form) {
  */
 function theme_gallery_assist_form_current($form) {
   $header = array();
-    //
-    if (!is_numeric(variable_get('gallery_assist_editform_pager_limit', 'none'))) {
-      $header[] = '';
-    }
-    $header[] = array('data' => t('Remove'), 'class' => 'ga-form-delete');
-    $header[] = array('data' => t('Image'), 'class' => 'ga-form-item');
-    $header[] = array('data' => t('Image info'), 'class' => 'ga-form-caption');
+  //
+  if (!is_numeric(variable_get('gallery_assist_editform_pager_limit', 'none'))) {
+    $header[] = '';
+  }
+  $header[] = array('data' => t('Remove'), 'class' => 'ga-form-delete');
+  $header[] = array('data' => t('Image'), 'class' => 'ga-form-item');
+  $header[] = array('data' => t('Image info'), 'class' => 'ga-form-caption');
 
   if (!is_numeric(variable_get('gallery_assist_editform_pager_limit', 'none'))) {
     $header[] = array('data' => t('Weight'), 'field' => 'weight');
@@ -1252,7 +1299,6 @@ function gallery_assist_settings_submit(&$form, $form_state) {
       'pager_visibles' => check_plain($form_state['values']['gallery_assist_'. $type .'_pager_visibles']),
       'force_image_height' => $form_state['values']['gallery_assist_'. $type .'_force_image_height'],
       'show_download_link' => $form_state['values']['gallery_assist_'. $type .'_show_download_link'],
-      'comments' => $form_state['values']['gallery_assist_'. $type .'_comments'],
       'use_mbImgNav' => $form_state['values']['gallery_assist_'. $type .'_use_mbImgNav'],
       'use_galleria' => $form_state['values']['gallery_assist_'. $type .'_use_galleria'],
       'hide_in_teaser' => $form_state['values']['gallery_assist_'. $type .'_hide_in_teaser'],
@@ -1260,10 +1306,10 @@ function gallery_assist_settings_submit(&$form, $form_state) {
       'max_items' => check_plain($form_state['values']['gallery_assist_'. $type .'_max_items']),
       'max_form_items' => check_plain($form_state['values']['gallery_assist_'. $type .'_max_form_items']),
 
-        'file_size' => $form_state['values']['gallery_assist_'. $type .'_file_size'] * 1024 * 1024,
-        'user_size' => $form_state['values']['gallery_assist_'. $type .'_user_size'] * 1024 * 1024,
-        'resolution' => check_plain($form_state['values']['gallery_assist_'. $type .'_resolution']),
-        'extensions' => check_plain($form_state['values']['gallery_assist_'. $type .'_extensions']),
+      'file_size' => $form_state['values']['gallery_assist_'. $type .'_file_size'] * 1024 * 1024,
+      'user_size' => $form_state['values']['gallery_assist_'. $type .'_user_size'] * 1024 * 1024,
+      'resolution' => check_plain($form_state['values']['gallery_assist_'. $type .'_resolution']),
+      'extensions' => check_plain($form_state['values']['gallery_assist_'. $type .'_extensions']),
 
       'ga_public_status' => $form_state['values']['gallery_assist_'. $type .'_ga_public_status'],
       'admin_public_status' => $form_state['values']['gallery_assist_'. $type .'_admin_public_status'],
@@ -1293,7 +1339,8 @@ function gallery_assist_settings_submit(&$form, $form_state) {
       'ga_item_title_type' => $form_state['values']['gallery_assist_'. $type .'_ga_item_title_type'],
       'pager_align' => $form_state['values']['gallery_assist_'. $type .'_pager_align'],
       't_thm_link_format' => $form_state['values']['gallery_assist_'. $type .'_t_thm_link_format'],
-      'ga_pager_show_pages' => $form_state['values']['gallery_assist_'. $type .'_ga_pager_show_pages']
+      'ga_pager_show_pages' => $form_state['values']['gallery_assist_'. $type .'_ga_pager_show_pages'],
+      'ga_cover_sticky' => $form_state['values']['gallery_assist_'. $type .'_ga_cover_sticky']
     );
 
     variable_set("hide_node_first_notice_for_{$type}", $form_state['values']['gallery_assist_'. $type .'_hide_node_first_notice']);
@@ -1651,7 +1698,7 @@ function gallery_assist_check_access($node, $op = 'view') {
       }
       else {
         if (user_access('view gallery_assist content') || user_access('view gallery_assist_'. $node->type .' content')) {
-          if (module_exists('user_relationship_node_access') && $node->gallconf[$node->type]['ga_public_status'] == 'ur') {
+          if (module_exists('user_relationship_node_access') && $node->ga_public_status == 'ur') {
             return gallery_assist_check_ur($node, 'view');
           }
           else {
@@ -1676,7 +1723,7 @@ function gallery_assist_check_access($node, $op = 'view') {
           return TRUE;
         }
         else {
-          if (module_exists('user_relationship_node_access') && $node->gallconf[$node->type]['ga_public_status'] == 'ur') {
+          if (module_exists('user_relationship_node_access') && $node->ga_public_status == 'ur') {
             return gallery_assist_check_ur($node, 'update');
           }
           else {
@@ -1698,7 +1745,7 @@ function gallery_assist_check_access($node, $op = 'view') {
           return TRUE;
         }
         else {
-          if (module_exists('user_relationship_node_access') && $node->gallconf[$node->type]['ga_public_status'] == 'ur') {
+          if (module_exists('user_relationship_node_access') && $node->ga_public_status == 'ur') {
             return gallery_assist_check_ur($node, 'delete');
           }
           else {
@@ -1827,7 +1874,7 @@ function __gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
 function gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
   global $user;
   $nt_conf = variable_get('gallery_assist_'. $node->type .'_data', array());
-  $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
+  $pager_limit = arg(3) == 'ga_sort' ? arg(3) : variable_get('gallery_assist_editform_pager_limit', 25);
   $ga_c = array();
   $nt_ic_conf = array();
 
@@ -1844,8 +1891,10 @@ function gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
   }
   else {
     // additions for the node object
-    $additions = db_fetch_object(db_query("SELECT gid, ref, gref, lang, ganame, description, in_profile, comments, show_title, show_in_homepage_block, gallery_assist_weight, data, (SELECT COUNT(DISTINCT(pid)) FROM {gallery_assist_item} p WHERE p.gref = gref) ga_counter FROM {gallery_assist} WHERE nid = %d", $node->nid));
-    $additions->has_cover = db_result(db_query("SELECT pid FROM {gallery_assist_item} WHERE gref = %d AND cover = %d", $additions->gref, 1));
+    $additions = db_fetch_object(db_query("SELECT * FROM {gallery_assist} WHERE nid = %d", $node->nid));
+    $additions->ga_count = $additions->items;
+    unset($additions->nid);
+
     // Do nothing when not match's
     if (count($additions) == 0) {
       return FALSE;
@@ -1862,24 +1911,72 @@ function gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
       $udata['ga_db_order'] = $nt_conf['ga_db_order'];
     }
 
+    if ($nt_conf['common_settings_allowed']) {
+      if (!$nt_conf['gallery_public_status_allowed']) {
+        $additions->ga_public_status = $nt_conf['ga_public_status'];
+      }
+      if (!$nt_conf['container_format_allowed']) {
+        $udata['container_format'] = $nt_conf['container_format'];
+      }
+      if (!$nt_conf['gallery_container_weight_allowed']) {
+        $udata['gallery_container_weight'] = $nt_conf['gallery_container_weight'];
+      }
+      if (!$nt_conf['show_in_homepage_block_allowed']) {
+        $udata['show_in_homepage_block'] = $nt_conf['show_in_homepage_block'];
+      }
+      if (!$nt_conf['gallery_public_status_allowed']) {
+        $additions->ga_public_status = $nt_conf['show_in_homepage_block'];
+      }
+      if (!$nt_conf['show_titles_allowed']) {
+        $udata['show_titles'] = $nt_conf['show_titles'];
+        $udata['ga_item_title_type'] = $nt_conf['ga_item_title_type'];
+      }
+      if (!$nt_conf['show_in_userprofile_allowed']) {
+        $udata['show_in_userprofile'] = $nt_conf['show_in_userprofile'];
+      }
+      if (!$nt_conf['gallery_items_shadow_allowed']) {
+        $udata['gallery_items_shadow'] = $nt_conf['gallery_items_shadow'];
+      }
+    }
+
+    if ($nt_conf['extra_layout_settings_allowed'] == 1) {
+      if (!$nt_conf['hide_teaser_container_allowed']) {
+        $udata['hide_in_teaser'] = $nt_conf['hide_teaser_container_allowed'];
+      }
+      if (!$nt_conf['show_download_link_allowed']) {
+        $udata['show_download_link'] = $nt_conf['show_download_link'];
+      }
+    }
+    else {
+      $udata['ga_align'] = $nt_conf['ga_align'];
+      $udata['gap_align'] = $nt_conf['gap_align'];
+      $udata['t_ga_float'] = $nt_conf['t_ga_float'];
+      $udata['p_ga_float'] = $nt_conf['p_ga_float'];
+      $udata['t_thm_link_format'] = $nt_conf['t_thm_link_format'];
+    }
+
     // Get gallery items data.
     $query_args = array($additions->gref, $node->language);
 
     $ga_db_order_field = isset($udata['ga_db_order_field']) ? $udata['ga_db_order_field'] : 'a.weight';
     $ga_db_order = isset($udata['ga_db_order']) ? $udata['ga_db_order'] : 'ASC';
+    $ga_cover_sticky = $nt_conf['ga_cover_sticky'] == 1 ? 'a.cover DESC, ' : '';
 
     $query = "SELECT a.pid, a.nid, a.ref, a.gid, a.gref, a.sid, a.uid, a.fid, a.filename, a.opath,
     a.ppath, a.tpath, a.copyright, a.weight, a.cover, a.aid, f.timestamp, tp.lang, tp.ptitle, tp.palt, tp.pdescription, tp.format,
     tp.did FROM {gallery_assist_item} a JOIN {gallery_assist_translated} tp ON a.pid = tp.pid
     JOIN {files} f ON f.fid = a.fid
     WHERE a.gref=%d AND tp.lang = '%s'";
-    $query .= " ORDER BY a.cover DESC, {$ga_db_order_field} {$ga_db_order}";
+    $query .= " ORDER BY {$ga_cover_sticky} {$ga_db_order_field} {$ga_db_order}";
 
     $query_count = "SELECT count( * ) FROM {gallery_assist_item} a WHERE a.gref=%d";
     $items_count = db_result(db_query($query_count, $additions->gref));
 
-    if (arg(0) == 'node' && arg(2) == 'edit' && is_numeric(variable_get('gallery_assist_editform_pager_limit', 'none'))) {
-      if ($items_count > 0) { 
+    if ($pager_limit == arg(3)) {
+      $pager_limit = $nt_conf['items_per_row'] * $nt_conf['rows_per_page'];
+    }
+    if (arg(0) == 'node' && arg(2) == 'edit' && !isset($_GET['unlimited']) && is_numeric(variable_get('gallery_assist_editform_pager_limit', 'none'))) {
+      if ($items_count > 0) {
         $result = pager_query($query, $pager_limit, 0, $query_count, $query_args);
       }
     }
@@ -1921,6 +2018,9 @@ function gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
     $ga_c[$node->type]['ga_item_title_type'] = $udata['ga_item_title_type'];
 
     while ($item = db_fetch_object($result)) {
+      if ($item->cover == 1) {
+        $additions->has_cover = $item->pid;
+      }
       $additions->gallitems[$item->pid] = $item;
       $additions->gallitems[$item->pid]->thmb_path = preg_replace('/thm\//', 'img/', $item->tpath);
       $additions->gallitems[$item->pid]->download_path = $item->opath;
@@ -2001,8 +2101,6 @@ function gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
     $ga_c[$node->type]['gap_align'] = $udata['gap_align'];
     $ga_c[$node->type]['t_ga_float'] = $udata['t_ga_float'];
     $ga_c[$node->type]['p_ga_float'] = $udata['p_ga_float'];
-
-    $ga_c[$node->type]['ga_public_status'] = $udata['ga_public_status'];
 
     $ga_c[$node->type]['item_effect'] = $udata['item_effect'] ? $udata['item_effect'] : '';
     $ga_c[$node->type]['t_thm_link_format'] = $udata['t_thm_link_format'] ? $udata['t_thm_link_format'] : 'item';
@@ -2087,7 +2185,6 @@ function gallery_assist_insert(&$node) {
       'ga_db_order_field' => $data['ga_db_order_field'],
       'ga_db_order' => $data['ga_db_order'],
       'ga_item_title_type' => $data['ga_item_title_type'],
-      'ga_public_status' => $data['ga_public_status'],
       't_thm_link_format' => $data['t_thm_link_format']
     );
     $new_data = serialize($settings);
@@ -2160,7 +2257,7 @@ function gallery_assist_insert(&$node) {
 
       $my['gref']       = $orig->gref ? $orig->gref : $orig->gid;
       $node->in_profile = $orig->in_profile;
-      $node->comments   = $orig->comments;
+      $node->ga_public_status   = $orig->ga_public_status;
       $node->show_title = $orig->show_title;
       $av_translation = TRUE;
       $cq = "DELETE FROM {cache_gallery_assist_data} WHERE cid = '%s'";
@@ -2176,7 +2273,7 @@ function gallery_assist_insert(&$node) {
       $my['ganame']     = 'gallery_assist'. $node->nid;
       $my['ref']        = $node->nid;
       $node->in_profile = '';
-      $node->comments   = '';
+      $node->ga_public_status   = '';
       $node->show_title = '';
     }
     else {
@@ -2192,7 +2289,7 @@ function gallery_assist_insert(&$node) {
       'uid' => $node->uid,
       'ganame' => $my['ganame'],
       'in_profile' => isset($node->in_profile) ? $node->in_profile : $data['in_profile'],
-      'comments' => $data['comments'],
+      'ga_public_status' => $data['ga_public_status'],
       'show_title' => isset($node->show_title) ? $node->show_title : $data['show_title'],
       'show_in_homepage_block' => isset($node->show_in_homepage_block) ? $node->show_in_homepage_block : $data['show_in_homepage_block'],
       'gallery_assist_weight' => $data['gallery_assist_weight'] ? $data['gallery_assist_weight'] : $node->gallery_assist_weight,
@@ -2291,29 +2388,80 @@ function gallery_assist_update($node) {
 
   // Update data.
   $d_settings = variable_get('gallery_assist_'. $node->type .'_data', FALSE);
-  $settings = array(
-    'ga_align' => $node->ga_align ? $node->ga_align : $d_settings['ga_align'],
-    'gap_align' => $node->gap_align ? $node->gap_align : $d_settings['gap_align'],
-    't_ga_float' => $node->t_ga_float ? $node->t_ga_float : $d_settings['t_ga_float'],
-    'p_ga_float' => $node->p_ga_float ? $node->p_ga_float : $d_settings['p_ga_float'],
-    'show_layout' => $node->show_layout ? $node->show_layout : $d_settings['show_layout'],
-    'shadow' => $node->shadow ? $node->shadow : $d_settings['shadow'],
-    'hide_in_teaser' => !empty($node->hide_in_teaser) ? $node->hide_in_teaser : 0,
-    'show_download_link' => $node->show_download_link,
-    'item_effect' => !empty($node->item_effect) ? $node->item_effect : 'default',
-    'ga_db_order_field' => $node->ga_db_order_field,
-    'ga_db_order' => $node->ga_db_order,
-    'ga_item_title_type' => $node->ga_item_title_type,
-    'ga_public_status' => $node->ga_public_status,
-    't_thm_link_format' => $node->t_thm_link_format
-  );
+  $settings = array();
 
-//  if ($node->ga_db_order == 'ASC') {
-//    db_query("UPDATE {gallery_assist_item} set weight = %d WHERE cover = 1", -10000);
-//  }
-//  if ($node->ga_db_order == 'DESC') {
-//    db_query("UPDATE {gallery_assist_item} set weight = %d WHERE cover = 1", 10000);
-//  }
+  if ($d_settings['common_settings_allowed']) {
+    if ($d_settings['gallery_public_status_allowed']) {
+      $settings['ga_public_status'] = $node->ga_public_status ? $node->ga_public_status : 0;
+    }
+    else {
+      $settings['ga_public_status'] = $d_settings['ga_public_status'];
+    }
+    if ($d_settings['container_format_allowed']) {
+      $settings['container_format'] = $node->container_format ? $node->container_format : 0;
+    }
+    else {
+      $settings['container_format'] = $d_settings['container_format'];
+    }
+    if ($d_settings['gallery_container_weight_allowed']) {
+      $settings['gallery_container_weight'] = $node->gallery_container_weight ? $node->gallery_container_weight : 0;
+    }
+    else {
+      $settings['gallery_container_weight'] = $d_settings['gallery_container_weight'];
+    }
+    if ($d_settings['show_in_homepage_block_allowed']) {
+      $settings['show_in_homepage_block'] = $node->show_in_homepage_block ? $node->show_in_homepage_block : 0;
+    }
+    else {
+      $settings['show_in_homepage_block'] = $d_settings['show_in_homepage_block'];
+    }
+    if ($d_settings['gallery_public_status_allowed']) {
+      $settings['gallery_public_status'] = $node->gallery_public_status ? $node->gallery_public_status : 0;
+    }
+    else {
+      $node->gallery_public_status = $d_settings['show_in_homepage_block'];
+    }
+    if ($d_settings['show_titles_allowed']) {
+      $settings['show_titles'] = $node->show_titles ? $node->show_titles : 0;
+      $settings['ga_item_title_type'] = $node->ga_item_title_type;
+    }
+    else {
+      $settings['show_titles'] = $d_settings['show_titles'];
+      $settings['ga_item_title_type'] = $d_settings['ga_item_title_type'];
+    }
+    if ($d_settings['show_in_userprofile_allowed']) {
+      $settings['show_in_userprofile'] = $node->show_in_userprofile ? $node->show_in_userprofile : 0;
+    }
+    else {
+      $settings['show_in_userprofile'] = $d_settings['show_in_userprofile'];
+    }
+    if ($d_settings['gallery_items_shadow_allowed']) {
+      $settings['gallery_items_shadow'] = $node->gallery_items_shadow ? $node->gallery_items_shadow : 0;
+    }
+    else {
+      $settings['gallery_items_shadow'] = $d_settings['gallery_items_shadow'];
+    }
+  }
+
+  if ($d_settings['extra_layout_settings_allowed'] == 1) {
+    $settings['ga_align'] = $node->ga_align ? $node->ga_align : $d_settings['ga_align'];
+    $settings['gap_align'] = $node->gap_align ? $node->gap_align : $d_settings['gap_align'];
+    $settings['t_ga_float'] = $node->t_ga_float ? $node->t_ga_float : $d_settings['t_ga_float'];
+    $settings['p_ga_float'] = $node->p_ga_float ? $node->p_ga_float : $d_settings['p_ga_float'];
+    $settings['t_thm_link_format'] = $node->t_thm_link_format ? $node->t_thm_link_format : $d_settings['t_thm_link_format'];
+    if ($d_settings['hide_teaser_container_allowed']) {
+      $settings['hide_in_teaser'] = $node->hide_in_teaser ? $node->hide_in_teaser : 0;
+    }
+    else {
+      $settings['hide_in_teaser'] = $d_settings['hide_teaser_container_allowed'];
+    }
+    if ($d_settings['show_download_link_allowed']) {
+      $settings['show_download_link'] = $node->show_download_link ? $node->show_download_link : 0;
+    }
+    else {
+      $settings['show_download_link'] = $d_settings['show_download_link'];
+    }
+  }
 
   $settings['ga_db_order'] = $node->ga_db_order;
 
@@ -2397,7 +2545,7 @@ function gallery_assist_update($node) {
       'gid' => $res->gid,
       'uid' => $node->uid,
       'in_profile' => $my_in_profile,
-      'comments' => $node->comments,
+      'ga_public_status' => $node->ga_public_status,
       'show_title' => $my_show_title,
       'gallery_assist_weight' => $node->gallery_assist_weight,
       'show_in_homepage_block' => $node->show_in_homepage_block,
@@ -2987,6 +3135,7 @@ function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
           gallery_assist_insert($node);
           $gallery = gallery_assist_load($node);
         }
+        // Add Gallery Assist gallery data to the node object.
         foreach ($gallery as $key => $addition) {
           $node->$key = $addition;
         }
@@ -3116,7 +3265,7 @@ function gallery_assist_check_public_status($node, $u, $op = 'default') {
 //      break;
 //  }
 
-  switch ($node->gallconf[$node->type]['ga_public_status']) {
+  switch ($node->ga_public_status) {
     case 'ur':
       return TRUE;
     case 2:
@@ -3845,8 +3994,11 @@ function theme_gallery_assist_pager($node_light, $links, $extras = array()) {
  *   An associative array the gallery settings data.
  */
 function gallery_assist_prepare_thms($item = array(), $conf = array()) {
-
-  $title  = $item->ptitle;
+  $title = '';
+  if ($conf['opt'] == 'teaset' && $conf['t_thm_link_format'] == 'none') {
+    $title .= "Click the title or the Read more to see all images of this gallery | image: ";
+  }
+  $title .= $item->ptitle;
   $title .= $item->copyright ? ' | © ' . $item->copyright : '';
 
   if (module_exists('imagecache') && $conf['use_imagecache'] == 1) {
@@ -4277,7 +4429,7 @@ function _gallery_assist_block_display_2($delta, $conf = NULL) {
   $in = strlen($data[$delta]['galleries']) > 0 ? explode(' ', $data[$delta]['galleries']) : '';
 
   $n = $in[rand(0, count($in) - 1)];
-  $gref = db_fetch_object(db_rewrite_sql(db_query("SELECT g.gref, g.data, g.nid, n.type FROM {gallery_assist} g JOIN {node} n ON n.nid = g.nid WHERE g.nid = %d", $n)));
+  $gref = db_fetch_object(db_rewrite_sql(db_query("SELECT g.gref, g.ga_public_status, g.data, g.nid, n.type FROM {gallery_assist} g JOIN {node} n ON n.nid = g.nid WHERE g.nid = %d", $n)));
 //  $gref->data = unserialize($gref->data);
   $gref->gallconf[$gref->type] = unserialize($gref->data);
 
@@ -4290,7 +4442,7 @@ function _gallery_assist_block_display_2($delta, $conf = NULL) {
         ORDER BY f.timestamp ". $data[$delta]['order'] ."
         LIMIT %d";
 
-  switch ($gref->data['ga_public_status']) {
+  switch ($gref->ga_public_status) {
     case 'ur':
       $node = node_load($gref->nid);
       $display = gallery_assist_check_ur($node, 'view');
@@ -5209,11 +5361,7 @@ function _gallery_assist_mass_updates_helper($nid, $updates) {
       $changed = TRUE;
     }
     elseif ($name == 'ga_public_status') {
-      $data = db_result(db_query("SELECT data FROM {gallery_assist} WHERE nid = %d", $nid));
-      $data = unserialize($data);
-      $data['ga_public_status'] = $value;
-      $my_value = serialize($data);
-      db_query("UPDATE {gallery_assist} SET data = '%s' WHERE nid = %d", $my_value, $nid);
+      db_query("UPDATE {gallery_assist} SET ga_public_status = '%s' WHERE nid = %d", $my_value, $nid);
       $changed = TRUE;
     }
     if ($changed) {
@@ -5341,24 +5489,48 @@ function gallery_assist_emulate_pager_pages(&$node, $page, $pages, $link){
   return $my_pager;
 }
 
-/*
+/**
+ * Build gallery items link acording the settings.
+ *
+ * @param $my_img
+ *   A string containing the rended image tag.
+ * @param $item
+ *   An object containing all necessary parameters from the item (image).
+ * @param $link_query
+ *   An array with data to be used as fragment or extra queries for the hyperlink.
+ * @param $conf
+ *   An array containing the gallery settings from current assignment.
+ *
+ * @return An html string containing the rendered hyperlink.
+ */
+function gallery_assist_build_item_hyperlink($my_img, $item, $link_query, $conf) {
+  // Build the teaser thumbnail links.
+  if ($conf['opt'] == 'teaser') {
+    switch ($conf['t_thm_link_format']) {
+      case 'none':
+        $thm_link = $my_img;
+        break;
+      case 'node':
+        $thm_link = l($my_img, 'node/'. $item->my_nid, array('html' => TRUE, 'query' => $link_query));
+        break;
+      case 'item':
+        if (empty($conf['ga_overwrite_hyperlink'])) {
+          $thm_link = l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
+        }
+        else {
+          $thm_link = $conf['ga_overwrite_hyperlink'];
+        }
+        break;
+    }
+  }
+  else {
+    if (empty($conf['ga_overwrite_hyperlink'])) {
+      $thm_link = l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
+    }
+    else {
+      $thm_link = $conf['ga_overwrite_hyperlink'];
+    }
+  }
 
-New features
-  - Implementation of a functionality to build pages links for the GA pager in the page view.
-    Impulsed and part-contributed by ericpai (see [#982426]).
-  - Modification in the GA access check function to allow anonymous to create and manage GA galleries and use GA sub modules.
-  - Add different possibilities to link the thumbnails from the teaser view as follow.
-      1 - not linked.
-      2 - Linked to the node.
-      3 - Linked to the image preview page.
-  - Add the db field "items" which will contain the count of items in a gallery and will needed from GA-Views field_handler_counter.
-
-Bug fixes
-  [#957856]
-  [#958224]
-  [#919850]
-  [#963238]
-  [#967470]
-  [#958224]
-  [#979872]
-*/
+  return $thm_link;
+}

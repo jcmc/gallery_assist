@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.49 2010/12/01 16:10:08 jcmc Exp $
+// $Id: gallery_assist.install,v 1.1.2.31 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file
@@ -64,12 +64,12 @@ function gallery_assist_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0),
-      'comments' => array(
-        'description' => 'Allow post coments authenticate users. Will come later...',
+      'ga_public_status' => array(
+        'description' => 'The public status from a gallery.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0),
+        'default' => 2),
       'show_title' => array(
         'description' => 'Show images titles by gallery group view.',
         'type' => 'int',
@@ -328,8 +328,21 @@ function gallery_assist_install() {
 
   // Set default gallery_assist variables.
   variable_set('gallery_assist_directory', file_directory_path() .'/gallery_assist');
+
+  // Create default GA directory.
   if (!file_check_directory(variable_get('gallery_assist_directory', FALSE), 1)) {
     drupal_set_message(t('It was not possible to create the gallery_assist directory. The files directory must be writable. Clarify the write permissions for the files folder and reinstall the module Gallery Assist.'), 'error');
+  }
+  else {
+    $path = variable_get('gallery_assist_directory', FALSE) . '/'. 1;
+    file_check_directory($path, 1);
+    watchdog('info', t('Gallery enviroment for the "super-admin" was created successfull.'));
+    global $user;
+    if ($user->uid != 1) {
+      $path = $settings['ga']['ga_directory'] . '/'. $user->uid;
+      file_check_directory($path, 1);
+      watchdog('info', t('Gallery enviroment for user @user was created successfull.', array('@user', $user->name)));
+    }
   }
 
   // Set the default variables and default values for gallery assist and/or node types with assignment.
@@ -377,7 +390,7 @@ function gallery_assist_install() {
       'resolution' => 0,
       'extensions' => 'jpg jpeg gif png',
     //),
-    'ga_public_status' => 1,
+    'ga_public_status' => 2,
     'admin_public_status' => FALSE,
     'pager_t_height' => 20,
     'pager_t_active_height' => 25,
@@ -401,7 +414,8 @@ function gallery_assist_install() {
     'pager_align' => 'center',
     // Update 6
     't_thm_link_format' => 'item',
-    'ga_pager_show_pages' => TRUE
+    'ga_pager_show_pages' => TRUE,
+    'ga_cover_sticky' => 1
   );
 
   // Set the default variables and default values for gallery assist block gallery..
@@ -436,7 +450,7 @@ function gallery_assist_install() {
     ),
   );
 
-  // One of the basic features of this module is the assign gallery-funktionality. 
+  // One of the basic features of this module is the assign gallery-funktionality.
   // The set the variable at this point is the best method to develop efecctiv and simplified module code.
   // (I mean with this the Assignment-Functionality)
   variable_set('gallery_assist_default', 1);
@@ -453,7 +467,7 @@ function gallery_assist_install() {
  */
 function gallery_assist_uninstall() {
   module_invoke('gallery_assist', 'delete_directory', variable_get('gallery_assist_directory', file_directory_path() .'/gallery_assist'));
-  
+
   // Delete all entries in the file table.
   $query = "SELECT fid FROM {gallery_assist_item}";
   $result = db_query($query);
@@ -498,11 +512,11 @@ function gallery_assist_update_1() {
   $types = node_get_types();
 
   foreach ($types as $n) {
-    
+
     $nt_settings = variable_get('gallery_assist_'. $n->type .'_data', FALSE);
-    
+
     if (variable_get('gallery_assist_'. $n->type, 0) == 1) {
-      
+
       $node_type_settings['show_title'] = empty($nt_settings['show_title']) ? $nt_settings['show_title'] : 0;
       $node_type_settings['show_layout'] = empty($nt_settings['show_layout']) ? $nt_settings['show_layout'] : 'grid';
       $node_type_settings['layout']['ga_align'] = empty($nt_settings['layout']['ga_align']) ? $nt_settings['layout']['ga_align'] : 'center';
@@ -516,7 +530,7 @@ function gallery_assist_update_1() {
   }
 
   $old = variable_get('gallery_assist_block_data', FALSE);
-  
+
   // Set the default variables and default values for gallery assist block gallery.
   // Respect the old settings.
   $ga_block_variables = array(
@@ -566,7 +580,7 @@ function gallery_assist_update_2() {
     'description' => 'Contains extra configuration data for each gallery.',
   );
   db_change_field($ret, 'gallery_assist', 'data', 'data', $db_field);
-  
+
   $table = drupal_get_schema_unprocessed('system', 'cache');
   $table['description'] = 'Cache table for gallery_assist to store pre-rendered queries, results, and display output.';
   $table['fields']['serialized']['default'] = 1;
@@ -620,7 +634,7 @@ function gallery_assist_update_3() {
       $data = $k->data;
       $gref = $k->gref;
       update_sql("UPDATE {gallery_assist} set show_in_homepage_block = $show_in_homepage_block, data = '$data' WHERE gref = $gref");
-  
+
       $type = 'Update 2';
       $message = 'Table <strong>%table_name</strong> was sucessfull altered.</br>';
       $variables = array('%table_name' => 'gallery_assist', '@gid' => $k->gref, '@show_in_homepage_block' => $k->show_in_homepage_block);
@@ -635,7 +649,7 @@ function gallery_assist_update_3() {
   // Add the cover column..
   //db_query("ALTER TABLE {gallery_assist_item} ADD cover INT UNSIGNED NOT NULL DEFAULT %d AFTER comments", 0);
   // Set a cover for each existing gallery.
-  db_add_field($ret, 'gallery_assist_item', 'cover', $spec['cover']);  
+  db_add_field($ret, 'gallery_assist_item', 'cover', $spec['cover']);
 
   // Set a image as cover in each existing gallery.
   $q = "SELECT pid from {gallery_assist_item} GROUP BY gref";
@@ -659,7 +673,7 @@ function gallery_assist_update_3() {
   $check['default']['item_effect'] = FALSE;
   $check['default']['max_items'] = FALSE;
   $check['default']['max_form_items'] = 6;
-  $check['default']['ga_public_status'] = 1;
+  $check['default']['ga_public_status'] = 2;
   $check['default']['admin_public_status'] = FALSE;
   $check['default']['validate_upload'] = $new_key;
   $check['default']['pager_t_height'] = 20;
@@ -723,7 +737,7 @@ function gallery_assist_update_3() {
 function gallery_assist_update_4() {
   $ret = array();
 
-  
+
   $schema['gallery_assist_modules_settings'] = array(
     'description' => 'Table to manage setting from gallery assist submodules.',
     'fields' => array(
@@ -781,13 +795,13 @@ function gallery_assist_update_4() {
       $check[$v->type] = variable_get('gallery_assist_'. $v->type .'_data', FALSE);
       $check[$v->type]['ga_db_order_field'] = 'a.weight';
       $check[$v->type]['ga_db_order'] = 'ASC';
-      
+
       variable_set('gallery_assist_'. $v->type .'_data', $check[$v->type]);
     }
   }
-  
+
   gallery_assist_clearthecache();
-  
+
   return $ret;
 }
 
@@ -871,6 +885,38 @@ function gallery_assist_update_6() {
     $settings = variable_get("gallery_assist_{$type}_data", array());
     $settings['t_thm_link_format'] = 'item';
     $settings['ga_pager_show_pages'] = TRUE;
+
+    variable_set("gallery_assist_{$type}_data", $settings);
+  }
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function gallery_assist_update_6107() {
+  $ret = array();
+
+  // Add the GA public staus as field.
+  $db = array(
+    'ga_public_status' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 2,
+      'description' => 'Gallery Assist gallery public status.',
+    )
+  );
+  db_change_field($ret, 'gallery_assist', 'comments', 'ga_public_status', $db['ga_public_status']);
+
+  // @TODO: GA: Update the ga_public_status from all existing galleries.
+
+  // Add new settings parameter.
+  $types = array('default' => 'Default');
+  $types += node_get_types('names');
+  foreach (array_keys($types) as $type) {
+    $settings = variable_get("gallery_assist_{$type}_data", array());
+    $settings['ga_cover_sticky'] = 1;
 
     variable_set("gallery_assist_{$type}_data", $settings);
   }

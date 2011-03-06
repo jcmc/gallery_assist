@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.46 2010/12/01 16:10:08 jcmc Exp $
+// $Id: gallery_assist_display.inc,v 1.1.2.25 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file
@@ -297,6 +297,14 @@ function gallery_assist_item_box($type, $item, $conf, $img) {
                $shadow_style
   );
 
+  if ($item->cover == 1) {
+    $item->type == $item->nodetype;
+    $item->ga_public_status == $conf['ga_public_status'];
+    if (gallery_assist_check_access($item, 'edit')) {
+      $my_item_attr['class'] .= ' ga-cover-bg';
+    }
+  }
+
   if ($conf['item_margin'] > 0) {
     $my_item_attr['style'] .= 'margin:'. $conf['item_margin'] .'px;';
   }
@@ -418,9 +426,11 @@ function gallery_assist_image_box($type, $item, $conf, $img) {
   unset($get_values['q']);
   $edit_text = t('[edit]');
   $delete_text = t('[delete]');
+  $cover_text = t('[cover]');
   $elink = l($edit_text, 'node/ga_edit_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
   $elink .= l($delete_text, 'node/ga_del_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
-//  $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $elink .' ]</div>'."\n";
+  $elink .= l($cover_text, 'ga_item_to_cover/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
+
   $node = new stdClass;
   $node->nid = $item->my_nid;
   $node->uid = $item->uid;
@@ -435,32 +445,16 @@ function gallery_assist_image_box($type, $item, $conf, $img) {
     $link_query['titles'] = $_GET['titles'];
   }
 
-  // Build the teaser thumbnail links.
-  if ($conf['opt'] == 'teaser') {
-    switch ($conf['t_thm_link_format']) {
-      case 'none':
-        $thm_link = $my_img;
-        break;
-      case 'node':
-        $thm_link = l($my_img, 'node/'. $item->my_nid, array('html' => TRUE, 'query' => $link_query));
-        break;
-      case 'item':
-        $thm_link = l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
-        break;
-    }
-  }
-  else {
-    $thm_link = l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
-  }
+  $lb_item_link = gallery_assist_build_item_hyperlink($my_img, $item, $link_query, $conf);
 
-  $output2  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
-  $output2 .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output2 .= '    '. $thm_link;
-  $output2 .= '</div>'."\n";
-  $output2 .= '</div>'."\n";
-  $output2 .= '<div'. drupal_attributes($edit_link_attr) .'>'. $edit_link .'</div>'."\n";
+  $output  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
+  $output .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
+  $output .= '    '. $lb_item_link;
+  $output .= '</div>'."\n";
+  $output .= '</div>'."\n";
+  $output .= '<div'. drupal_attributes($edit_link_attr) .'>'. $edit_link .'</div>'."\n";
 
-  return $output2;
+  return $output;
 }
 
 /**
