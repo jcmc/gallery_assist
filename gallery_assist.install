@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.1.2.11 2010/03/29 11:05:21 jcmc Exp $
+// $Id: gallery_assist.install,v 1.1.2.14 2010/04/13 14:51:13 jcmc Exp $
 
 /**
  * @file
@@ -495,7 +495,7 @@ function gallery_assist_update_2() {
     'not null' => TRUE,
     'description' => 'Contains extra configuration data for each gallery.',
   );
-  db_change_field(&$ret, 'gallery_assist', 'data', 'data', $db_field);
+  db_change_field($ret, 'gallery_assist', 'data', 'data', $db_field);
   
   $table = drupal_get_schema_unprocessed('system', 'cache');
   $table['description'] = 'Cache table for gallery_assist to store pre-rendered queries, results, and display output.';
@@ -516,6 +516,7 @@ function gallery_assist_update_3() {
   // DB Operations.
   $result1 = db_query("SELECT gref, shadow, data from {gallery_assist}");
 
+  $my_data = array();
   while ($r = db_fetch_object($result1)) {
     $my_data[$r->gref] = $r;
     $data = unserialize($r->data);
@@ -541,28 +542,30 @@ function gallery_assist_update_3() {
     ),
   );
 
-  db_add_field(&$ret, 'gallery_assist', 'show_in_homepage_block', $spec['show_in_homepage_block']);
+  db_add_field($ret, 'gallery_assist', 'show_in_homepage_block', $spec['show_in_homepage_block']);
 
-  foreach ($my_data as $k) {
-    $show_in_homepage_block = $k->show_in_homepage_block;
-    $data = $k->data;
-    $gref = $k->gref;
-    update_sql("UPDATE {gallery_assist} set show_in_homepage_block = $show_in_homepage_block, data = '$data' WHERE gref = $gref");
-
-    $type = 'Update 2';
-    $message = 'Table <strong>%table_name</strong> was sucessfull altered.</br>';
-    $variables = array('%table_name' => 'gallery_assist', '@gid' => $k->gref, '@show_in_homepage_block' => $k->show_in_homepage_block);
-    watchdog($type, $message, $variables);
+  if (count($my_data) > 1) {
+    foreach ($my_data as $k) {
+      $show_in_homepage_block = $k->show_in_homepage_block;
+      $data = $k->data;
+      $gref = $k->gref;
+      update_sql("UPDATE {gallery_assist} set show_in_homepage_block = $show_in_homepage_block, data = '$data' WHERE gref = $gref");
+  
+      $type = 'Update 2';
+      $message = 'Table <strong>%table_name</strong> was sucessfull altered.</br>';
+      $variables = array('%table_name' => 'gallery_assist', '@gid' => $k->gref, '@show_in_homepage_block' => $k->show_in_homepage_block);
+      watchdog($type, $message, $variables);
+    }
   }
 
   drupal_set_message('<p><strong>The feature "cover" is new. At now you or the registered users of your homepage (which Gallery Assist permitions) can choose a image as cover for each gallery.</strong></p>');
 
-  db_drop_field(&$ret, 'gallery_assist', 'shadow');
+  db_drop_field($ret, 'gallery_assist', 'shadow');
 
   // Add the cover column..
   //db_query("ALTER TABLE {gallery_assist_item} ADD cover INT UNSIGNED NOT NULL DEFAULT %d AFTER comments", 0);
   // Set a cover for each existing gallery.
-  db_add_field(&$ret, 'gallery_assist_item', 'cover', $spec['cover']);  
+  db_add_field($ret, 'gallery_assist_item', 'cover', $spec['cover']);  
 
   // Set a image as cover in each existing gallery.
   $q = "SELECT pid from {gallery_assist_item} GROUP BY gref";

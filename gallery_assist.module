@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.module,v 1.1.2.29 2010/04/06 00:48:47 jcmc Exp $
+// $Id: gallery_assist.module,v 1.1.2.37 2010/04/14 06:06:56 jcmc Exp $
 
 /**
  * @file
@@ -2485,6 +2485,36 @@ function gallery_assist_myhooktest() {
 }
 
 /**
+ * Invoke a hook_myhooktest() operation in all modules.
+ *
+ * @param &$node
+ *   A node object.
+ * @param $op
+ *   A string containing the name of the nodeapi operation.
+ * @param $a3, $a4
+ *   Arguments to pass on to the hook, after the $node and $op arguments.
+ * @return
+ *   The returned value of the invoked hooks.
+ */
+function gallery_assist_invoke_myhooktest(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  $return = array();
+  $imps = module_implements('myhooktest');
+
+  foreach (module_implements('myhooktest') as $name) {
+    $function = $name .'_myhooktest';
+    $result = $function($node, $op, $a3, $a4);
+    if (isset($result) && is_array($result)) {
+      $return = array_merge($return, $result);
+    }
+    elseif (isset($result)) {
+      $return[] = $result;
+    }
+  }
+
+  return $return;
+}
+
+/**
  * Implementation of hook_nodeapi().
  */
 function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
@@ -2570,36 +2600,6 @@ function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
       gallery_assist_delete($node);
       break;
   }
-}
-
-/**
- * Invoke a hook_myhooktest() operation in all modules.
- *
- * @param &$node
- *   A node object.
- * @param $op
- *   A string containing the name of the nodeapi operation.
- * @param $a3, $a4
- *   Arguments to pass on to the hook, after the $node and $op arguments.
- * @return
- *   The returned value of the invoked hooks.
- */
-function gallery_assist_invoke_myhooktest(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  $return = array();
-$imps = module_implements('myhooktest');
-
-  foreach (module_implements('myhooktest') as $name) {
-    $function = $name .'_myhooktest';
-    $result = $function($node, $op, $a3, $a4);
-    if (isset($result) && is_array($result)) {
-      $return = array_merge($return, $result);
-    }
-    elseif (isset($result)) {
-      $return[] = $result;
-    }
-  }
-
-  return $return;
 }
 
 /**
@@ -2784,7 +2784,7 @@ function gallery_assist_display_item_default($node, $pid, $global_node_type_sett
       $item->img = theme('imagecache', $node->gallconf[$node->type]['prev_presetname'], $node->gallitems[$pid]->opath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => $direction), FALSE);
     }
     else {
-      $item->img = theme('image', file_create_url($node->gallitems[$pid]->opath), $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => $direction), FALSE);
+      $item->img = theme('image', file_create_url($node->gallitems[$pid]->ppath), $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => $direction), FALSE);
       $prev = image_get_info($node->gallitems[$pid]->ppath);
     }
 
