@@ -1,0 +1,12 @@
+; $Id: gallery_assist.info,v 1.1 2009/10/11 00:20:08 jcmc Exp $
+name = Gallery Assist
+description = "Drupal content type with gallery functionality."
+package = "Media"
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-10-11
+version = "6.x-1.5"
+core = "6.x"
+project = "gallery_assist"
+datestamp = "1255222841"
+

@@ -1,0 +1,316 @@
+<?php
+// $Id: gallery_assist.install,v 1.1 2009/10/11 00:20:08 jcmc Exp $
+
+/**
+ * @file
+ * Drupal content type with gallery functionality. Install file.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function gallery_assist_schema() {
+  $schema['gallery_assist'] = array(
+    'description' => 'Gallery Assist principal table.',
+    'fields' => array(
+      'gid' => array(
+        'description' => 'The primary identifier for a gallery.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'gref' => array(
+        'description' => 'The reference ID to the gallery, used by translations.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'ref' => array(
+        'description' => 'The reference identifier to the node, used by translations.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'lang' => array(
+        'description' => 'The language code by translations.',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+        'default' => ''),
+      'nid' => array(
+        'description' => 'The primary identifier from the node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'uid' => array(
+        'description' => 'The user ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'ganame' => array(
+        'description' => 'The gallery name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'description' => array(
+        'description' => 'Gallery description on profiles. Will come later...',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'in_profile' => array(
+        'description' => 'Apears in the section of user profile -My Pictures-. Will come later...',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'comments' => array(
+        'description' => 'Allow post coments authenticate users. Will come later...',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'show_title' => array(
+        'description' => 'Show images titles by gallery group view.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'shadow' => array(
+        'description' => 'Image boxes shadow toggle.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'gallery_assist_weight' => array(
+        'description' => 'Weight of the gallery container by displaying the page.',
+        'type' => 'int',
+        'default' => 20),
+      'data' => array(
+        'description' => 'Contains the configuration data for the display galleries in the user profile. Will come later...',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => 20),
+      ),
+    'primary key' => array('gid'),
+  );
+
+  $schema['gallery_assist_item'] = array(
+    'description' => 'Table of the gallery assist items.',
+    'fields' => array(
+      'pid' => array(
+        'description' => 'The primary identifier for a gallery item.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'nid' => array(
+        'description' => 'The primary identifier from the node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'ref' => array(
+        'description' => 'The reference ID to the node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'gid' => array(
+        'description' => 'The gallery ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'gref' => array(
+        'description' => 'The reference ID to the gallery, used by translations.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'sid' => array(
+        'description' => 'The gallery ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        ),
+      'uid' => array(
+        'description' => 'The user ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'fid' => array(
+        'description' => 'The file ID in the files table.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        ),
+      'filename' => array(
+        'description' => 'The filename in the files table.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'opath' => array(
+        'description' => 'The path to the original images.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'ppath' => array(
+        'description' => 'The path to the previews images.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'tpath' => array(
+        'description' => 'The path to the thumbnails images.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'weight' => array(
+        'description' => 'Set the items order.',
+        'type' => 'int',
+        'not null' => TRUE),
+      'copyright' => array(
+        'description' => 'Copyright of images if needed.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => ''),
+      'comments' => array(
+        'description' => 'Allow comments to images from galleries displayed in user profile. Will come later...',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      ),
+    'primary key' => array('pid'),
+  );
+
+  $schema['gallery_assist_translated'] = array(
+    'description' => 'Table for the multilingual manage of the fields title, caption or description etc of gallery assist items.',
+    'fields' => array(
+      'did' => array(
+        'description' => 'The primary identifier for a translation.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'nid' => array(
+        'description' => 'The primary identifier from the node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'gid' => array(
+        'description' => 'The gallery ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'gref' => array(
+        'description' => 'The reference ID to the gallery, used by translations.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'pid' => array(
+        'description' => 'The primary identifier for a gallery item.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'lang' => array(
+        'description' => 'The language code by translations.',
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+        'default' => ''),
+      'ptitle' => array(
+        'description' => 'The gallery item name.',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE,
+        'default' => ''),
+      'palt' => array(
+        'description' => 'The filename of the gallery item image displayed as img alt.',
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => TRUE,
+        'default' => ''),
+      'pdescription' => array(
+        'description' => 'The gallery name.',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'default' => ''),
+      'format' => array(
+        'description' => 'The filter format for the pdescription.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      ),
+    'primary key' => array('did'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function gallery_assist_install() {
+  drupal_install_schema('gallery_assist');
+
+  // Set default gallery_assist variables.
+  if (!file_check_directory(variable_get('gallery_assist_directory', file_directory_path() .'/gallery_assist'), 1)) {
+    drupal_set_message(t('It was not possible to create the gallery_assist directory. The files directory must be writable. Clarify the write permissions for the files folder and reinstall the module Gallery Assist.'), 'error');
+  }
+
+  // Set the default variables and default values for gallery assist and/or node types with assigment.
+  // The default values will be assigned to each new gallery_assist asigment.
+  // You can set as desired others default values here.
+  $ga_variables = array(
+    'upload_thm' => 150,
+    'upload_prev' => 550,
+    'items_per_row' => 3,
+    'rows_per_page' => 2,
+    'thumbnail_size' => 100,
+    'thumbnail_size_plus' => 0,
+    'preview_size' => 550,
+    'item_margin' => 10,
+    'item_padding' => 20,
+    'item_border' => 0,
+    'item_border_color' => '#EDF5FA',
+    'show_backlink' => 0,
+    'show_toggle' => 0,
+    'position_toggle' => 0,
+    'title_substr' => 16,
+    'pager_symbol' => 0,
+    'pager_layout' => 'default',
+    'pager_position' => 'top',
+    'pager_visibles' => 3,
+  );
+
+  // One of the basic features of this module is the assign gallery-funktionality. 
+  // The set the variable at this point is the best method to develop efecctiv and simplified module code.
+  // (I mean with this the Assigment-Functionality)
+  variable_set('gallery_assist_default', 1);
+  variable_set('gallery_assist_default_data', $ga_variables);
+  variable_set('gallery_assist_gallery_assist', 1);
+  variable_set('gallery_assist_gallery_assist_data', $ga_variables);
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function gallery_assist_uninstall() {
+  // Delete all database tables.
+  drupal_uninstall_schema('gallery_assist');
+  
+  module_invoke('gallery_assist', 'delete_directory', variable_get('gallery_assist_directory', file_directory_path() .'/gallery_assist'));
+  
+  // Delete all gallery assist settings variables.
+  db_query("DELETE FROM {variable} WHERE name LIKE 'gallery_assist\_%'", $string);
+  
+}

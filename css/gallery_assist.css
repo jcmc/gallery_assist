@@ -1,0 +1,51 @@
+/* $Id: gallery_assist.css,v 1.1 2009/10/11 00:20:09 jcmc Exp $ */
+
+/* Gallery assist admin. */
+#gallery-assist-users-help {
+  margin: 0 20px;
+}
+
+#gallery-assist-users-help h3 {
+  margin: 12px 0 5px 0;
+}
+
+.gallery-assist-settings-left {
+  float:left;
+  padding: 0 10px;
+  width:30%;
+}
+
+/* gallery_assist container */
+.item-box {
+  float: left;
+}
+
+.image-box {
+  text-align: center;
+}
+
+/* gallery_assist item preview */
+#gallery-item-caption-title {
+  
+  font-weight: bold;
+}
+
+
+/* gallery_assist item preview pager */
+#ga-pager-box ul.pager {
+  text-align: left;
+  padding: 0 0 1em 0;
+}
+
+#ga-pager-box ul li img.off {
+  height: 20px;
+}
+#ga-pager-box ul li img.on {
+  height: 25px;
+}
+
+#exif-data {
+  margin-top: 2em;
+  padding: 2em;
+  border: 1px solid gray;
+}
