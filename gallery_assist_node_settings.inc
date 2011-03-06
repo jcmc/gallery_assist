@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_node_settings.inc,v 1.8 2010/04/22 16:28:33 jcmc Exp $
+// $Id: gallery_assist_node_settings.inc,v 1.9 2010/05/18 22:27:32 jcmc Exp $
 
 /**
  * @file
@@ -13,6 +13,26 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#type' => 'fieldset',
     '#title' => t('Items order'),
   );
+
+  $form['gid'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->gid,
+  );
+
+  $form['gref'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->gref,
+  );
+
+  if (count($node->gallconf[$node->type]['modules']) > 0) {
+    $modules = $node->gallconf[$node->type]['modules'];
+    foreach ($modules as $module) {
+      $form['gam_'. $module['module']] = array(
+        '#type' => 'hidden',
+        '#value' => $module['gam'],
+      );
+    }
+  }
 
   $form['load_modi']['ga_db_order_field'] = array(
     '#type' => 'select',

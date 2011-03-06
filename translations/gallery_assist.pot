@@ -1,4 +1,4 @@
-# $Id: gallery_assist.pot,v 1.1 2010/04/22 16:28:33 jcmc Exp $
+# $Id: gallery_assist.pot,v 1.2 2010/05/18 22:27:33 jcmc Exp $
 #
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>

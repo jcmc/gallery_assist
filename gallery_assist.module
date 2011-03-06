@@ -1,15 +1,16 @@
 <?php
-// $Id: gallery_assist.module,v 1.53 2010/04/22 19:34:18 jcmc Exp $
+// $Id: gallery_assist.module,v 1.55 2010/05/18 22:27:32 jcmc Exp $
 
 /**
  * @file
  * Drupal content type with gallery functionality.
  * 
- * 4 DB tables belonging to this module.
+ * 5 DB tables belonging to this module.
  *  - gallery_assist - Contain the gallery-information and configuration data in case the gallery-node will be configured separately (node level).
  *  - gallery_assist_items - Here will be stored the items data (currently are only images).
  *  - gallery_assist_translated - Contains the title and the description of each item and the translation.
  *  - cache_gallery_assist_data - Contains the needed content and settings data from Gallery Assist assigments.
+ *  - gallery_assist_modules_settings - Contains the settings data from modules which work together with Gallery Assist.
  */
 
 /**
@@ -56,6 +57,7 @@ function gallery_assist_help($path, $arg) {
  * Help for users with create gallery_assist permition.
  * 
  * @return
+ *   The help text as string.
  */
 function gallery_assist_users_help() {
   global $base_url;
@@ -68,6 +70,7 @@ function gallery_assist_users_help() {
 }
 
 /**
+ * TODO: The help should be partitioned acord the different sections (paths).
  * Print the help text for users and administrators.
  */
 function gallery_assist_help_text() {
@@ -267,15 +270,18 @@ The module validate the file types, move the files to the gallery folder and the
 }
 
 /**
- * Can be called and used from each submodule, from each place of Galley Assist in relation to Advanced Help.
+ * Provide more Advanced Help functionality for Galley Assist and submodules.
  * 
  * @param $in An array with the needed data to build and display a advanced help link.
  * - contains
- *   - $in['nid']
+ *   - $in['module']
+ *     -  An string containig the module name.
  *   - $in['help_link']
+ *     - A string containing the advanced help path.
  *   - $in['text']
+ *     - An string containing the help text.
  * 
- * @return the rendered Advanced Help link.
+ * @return the rendered Advanced Help link with the (?) icon.
  */
 function gallery_assist_advanced_help_builder($in = array()) {
   
@@ -401,25 +407,53 @@ function gallery_assist_access($op, $node, $account) {
 function gallery_assist_menu() {
   $items = array();
 
-  // Config assist gallery.
+  // Gallery Assist configuration.
+
+  // Principal path.
+  // Provide infomation about GA an submodules.
   $items['admin/settings/gallery_assist'] = array(
     'title' => 'Gallery Assist',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('gallery_assist_settings'),
+    'page callback' => 'gallery_assist_info_data',
     'access arguments' => array('administer gallery_assist'),
     'file' => 'gallery_assist.admin.inc',
     'description' => 'Manage the gallery_assist asigments and customize the html output.',
     'weight' => 0,
   );
 
-  // Config assist gallery. Primary tab.
+  // Info tab.
   $items['admin/settings/gallery_assist/gallery_assist'] = array(
-    'title' => 'Gallery Assist',
+    'title' => 'Info',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
+  );
+
+  // Assignments.
+  // Tab containing the node types with assigned Gallery Assist functionality.
+  $items['admin/settings/gallery_assist/assignments'] = array(
+    'title' => 'Assignments',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gallery_assist_settings'),
+    'access arguments' => array('administer gallery_assist'),
+    'file' => 'gallery_assist.admin.inc',
+    'description' => 'Manage the gallery_assist asigments and customize the html output.',
+    'type' => MENU_LOCAL_TASK,
+     'weight' => 1,
+  );
+
+  // Assignments.
+  // The default tab to manage the settings from the module content type (gallery_assist).
+  $items['admin/settings/gallery_assist/assignments/gallery_assist'] = array(
+    'title' => 'Gallery Assist',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gallery_assist_settings'),
+    'access arguments' => array('administer gallery_assist'),
+    'file' => 'gallery_assist.admin.inc',
+    'description' => 'Manage the gallery_assist asignments and customize the html output.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+     'weight' => 0,
   );//block/15
 
-  // Upload ahah callback.
+  // Upload (ahah callback).
   $items['gallery_assist_upload/js'] = array(
     'page callback' => 'gallery_assist_upload_js',
     'access arguments' => array('create gallery_assist content'),
@@ -432,32 +466,33 @@ function gallery_assist_menu() {
   $i = 1;
   foreach ($types as $type) {
     if (variable_get('gallery_assist_'. $type->type, 0) == 1 && $type->type != 'gallery_assist') {
-      // Config gallery_assist on others content types.
-      $items['admin/settings/gallery_assist/'. $type->type] = array(
+      // Assignments.
+      // Additional tabs to manage the settings from content types with assigned gallery functionality.
+      $items['admin/settings/gallery_assist/assignments/'. $type->type] = array(
         'title' => t($type->name),
         'page callback' => 'drupal_get_form',
-        'page arguments' => array('gallery_assist_settings', 3, $type->name),
+        'page arguments' => array('gallery_assist_settings', 4, $type->name),
         'access arguments' => array('administer gallery_assist_'. $type->type),
         'file' => 'gallery_assist.admin.inc',
         'type' => MENU_LOCAL_TASK,
         'weight' => $i,
       );
 
-      // Gallery_assist assigments: Upload ahah callback.
+      // Gallery_assist assignments: Upload ahah callback.
       $items['gallery_assist_'. $type->type .'_upload/js'] = array(
         'page callback' => 'gallery_assist_upload_js',
         'access arguments' => array('create gallery_assist_'. $type->type .' content'),
         'type' => MENU_CALLBACK,
       );
 
-      // Gallery_assist assigments: Show the gallery assist short help on any content type.
+      // Gallery_assist assignments: Show the gallery assist short help on any content type.
       $items['gallery_assist_'. $type->type .'/help'] = array(
         'page callback' => 'gallery_assist_users_help',
         'access arguments' => array('create gallery_assist_'. $type->type .' content'),
         'type' => MENU_CALLBACK,
       );
 
-      // Gallery_assist assigments: Edit one item. This feature is more confortable and faster in case of many gallery_assist items.
+      // Gallery_assist assignments: Edit one item. This feature is more confortable and faster in case of many gallery_assist items.
       $items['node/ga_edit_one_'. $type->type .'/%node/%'] = array(
         'title' => t('Gallery Assist'),
         'page callback' => 'drupal_get_form',
@@ -467,7 +502,7 @@ function gallery_assist_menu() {
         'weight' => 1000,
       );
 
-      // Gallery_assist assigments: Save one item ahah callback.
+      // Gallery_assist assignments: Save one item ahah callback.
       $items['gallery_assist_save_one_'. $type->type .'_js/js/%'] = array(
         'page callback' => 'gallery_assist_save_one_js',
         'access arguments' => array('create gallery_assist_'. $type->type .' content'),
@@ -478,7 +513,7 @@ function gallery_assist_menu() {
   }
 
   // Extra tab for micelaneous.
-  // Here are ordered the gallery assigment control, import settings for mass import etc.
+  // Here are ordered the gallery assignment control, import settings for mass import etc.
   $items['admin/settings/gallery_assist/extras'] = array(
     'title' => t('Extras'),
     'page callback' => 'drupal_get_form',
@@ -489,6 +524,7 @@ function gallery_assist_menu() {
     'weight' => 1000,
   );
 
+  // Default tab.
   $items['admin/settings/gallery_assist/extras/extras'] = array(
     'title' => t('Extras'),
     'page callback' => 'drupal_get_form',
@@ -507,14 +543,14 @@ function gallery_assist_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Import ahah callback.
+  // Import (ahah callback).
   $items['gallery_assist_import/js'] = array(
     'page callback' => 'gallery_assist_import_js',
     'access arguments' => array('create gallery_assist content'),
     'type' => MENU_CALLBACK,
   );
 
-  // Save one item ahah callback.
+  // Save one item (ahah callback).
   $items['gallery_assist_save_one_js/js/%'] = array(
     'page callback' => 'gallery_assist_save_one_js',
     'access arguments' => array('create gallery_assist content'),
@@ -529,7 +565,8 @@ function gallery_assist_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Edit one item. This feature is more confortable and faster in case of many gallery_assist items.
+  // Edit one item.
+  // This feature is more confortable and faster in case of many gallery_assist items.
   $items['node/ga_edit_one/%node/%'] = array(
     'title' => t('Gallery Assist'),
     'page callback' => 'drupal_get_form',
@@ -547,7 +584,8 @@ function gallery_assist_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // will come later...
+  // Tab displayed on the user profile containig all galleries from a user.
+  // For visitors (guest or anonimous) are galleries listed only if the parameter "show in user profile" is seted to TRUE.
   $items['user/%user/user_galleries'] = array(
     'title' => 'Galleries',
     'page callback' => 'gallery_assist_list_galleries',
@@ -570,12 +608,13 @@ function gallery_assist_menu() {
 }
 
 /**
- * Gallery list in user profile. A owner see all the own galleries, visitors only the selected to be displayed.
+ * Gallery list in user profile.
+ * A owner see all the own galleries, visitors only the selected to be displayed.
  * 
  * @param $u
  *  A string containing the user object of the node owner.
  * @return
- *  An array with the counter of items and the information data.
+ *  An string containing the galleries as list formated in a table.
  */
 function gallery_assist_list_galleries($u) {
   global $user, $db_type;
@@ -609,11 +648,9 @@ function gallery_assist_list_galleries($u) {
   $df = t('Y/m/d');
   while ($r = db_fetch_object($result)) {
       // Request sepparately the node data to avoid the DISTINCT error caused in case access modules are in use.
-      //$node_extras = db_result(db_query(db_rewrite_sql("SELECT n.title FROM {node} n WHERE n.nid = %d"), $r->nid));
       $r->items = db_result(db_query("SELECT count(p.pid) FROM {gallery_assist_item} p WHERE p.gref = %d", $r->gref));
       $r->tpath = db_result(db_query("SELECT tpath FROM {gallery_assist_item} p WHERE p.gref = %d and cover = 1", $r->gref));
       $c[$r->nid] = $r;
-      //$c[$r->nid]->title = $node_extras;
       $c[$r->nid]->counter = $count;
   }
 
@@ -748,10 +785,10 @@ function gallery_assist_form_alter(&$form, &$form_state, $form_id) {
       user_access('administer gallery_assist') || 
       user_access('administer gallery_assist_'. $node->type)) {
     if ($node->type == 'gallery_assist' ) {
-      $myPath = 'gallery_assist';
+      $myPath = 'gallery_assist/assignments';
     }
     elseif (variable_get('gallery_assist_'. $node->type, 0) == 1) {
-      $myPath = 'gallery_assist/'. $node->type;
+      $myPath = 'gallery_assist/assignments/'. $node->type;
     }
   }
 
@@ -870,24 +907,6 @@ function _gallery_assist_form(&$node) {
     $form['gallery_items']['#theme'] = 'gallery_assist_form_current';
     $form['gallery_items']['#tree'] = TRUE;
 
-    // Select all the nodes from user (type Gallery Assist and assigments).
-    // Build the array options for select. This would allow to change items betwen Gallery Assist galleries.
-    // coming later
-    // I have to take a desition: or here or as extra function.
-    /*
-    $q = "SELECT n.nid, n.vid, n.uid, n.language, n.title FROM {node} n";
-    $query = db_rewrite_sql($q, 'n', 'nid');
-    $result = db_query($query, $node->uid);
-
-    while ($r = db_fetch_object($result)) {
-      if ($r->title == $node->title && $r->nid = $node->nid && $r->vid = $node->vid) {
-        $options[$r->vid] = '*'. check_plain($r->title);
-      }
-      else {
-        $options[$r->vid] = check_plain($r->title);
-      }
-    }*/
-
     foreach ($node->gallitems as $key => $item) {
       $item = (object) $item;
       // Visualize the item image in the form
@@ -900,7 +919,6 @@ function _gallery_assist_form(&$node) {
 
       if (module_exists('imagecache') && $node->gallconf[$node->type]['use_imagecache'] == 1) {
         $ic = gallery_assist_get_preset_more_info($node->gallconf[$node->type]['thm_presetid']);
-        // $item_attr[$ic['direction']] = '100%';
         $item->image = theme('imagecache', $node->gallconf[$node->type]['thm_presetname'], $item->opath, $item->palt, $item->ptitle, $item_attr, FALSE);
       }
       else {
@@ -930,8 +948,6 @@ function _gallery_assist_form(&$node) {
       $form['gallery_items'][$key]['lang']    = array('#type' => 'hidden', '#value' => $node->lang ? $node->lang : $node->language);
     }
   }
-
-  //$form['new']['#weight'] = variable_get('gallery_assist_forms_possition', -2) + 2;
 
   $desc = module_exists('gallery_assist_upport') ? t('Permitted formats: jpg-, jpeg-, png-, gif-images and zip packages.') : t('Permitted formats: jpg-, jpeg-, png-, gif-images.');
 
@@ -978,7 +994,7 @@ function _gallery_assist_form(&$node) {
     );
     $form['new']['temp_copyright']  = array(
       '#type' => 'textfield', 
-      '#title' => t('Temp copyright'), 
+      '#title' => t('Copyright'),
       '#size' => 19,
       '#default_value' => $node->temp_copyright, 
       '#description' => gallery_assist_advanced_help_builder($help),
@@ -1054,8 +1070,6 @@ function theme_gallery_assist_form_current($form) {
   }
 
   // Define the output as draggable table
-  //drupal_add_tabledrag('gallery-assist-list', 'order', 'sibling', 'gallery-assist-weight');
-
   foreach (element_children($form) as $key) {
     if (!is_numeric(variable_get('gallery_assist_editform_pager_limit', 'none'))) {
       $row = array('');
@@ -1082,7 +1096,6 @@ function theme_gallery_assist_form_current($form) {
       // Build the row without dragable class
       $rows[] = array('data' => $row);
     }
-    
   }
 
   $output  = theme('table', $header, $rows, array('id' => 'gallery-assist-list'));
@@ -1099,7 +1112,6 @@ function theme_gallery_assist_form_current($form) {
  * @ingroup forms
  */
 function gallery_assist_nodetypes_submit(&$form, $form_state) {
-  //gallery_assist_invalidate_cache();
   $cq = "TRUNCATE TABLE {cache_gallery_assist_data}";
   db_query($cq);
   $defaults = variable_get('gallery_assist_default_data', array());
@@ -1112,7 +1124,6 @@ function gallery_assist_nodetypes_submit(&$form, $form_state) {
   }
 
   variable_set('gallery_assist_editform_pager_limit', $form_state['values']['gallery_assist_editform_pager_limit']);
-
   variable_set('gallery_assist_forms_possition', $form_state['values']['gallery_assist_forms_possition']);
 
   foreach ($node_types as $type) {
@@ -1131,10 +1142,6 @@ function gallery_assist_nodetypes_submit(&$form, $form_state) {
   menu_rebuild();
 }
 
-function gallery_assist_nodetypes_submit_validate($form, $form_state) {
-
-}
-
 /**
  * Update the settings of gallery_assist or of assigments.
  * 
@@ -1143,7 +1150,7 @@ function gallery_assist_nodetypes_submit_validate($form, $form_state) {
  * @ingroup forms
 */
 function gallery_assist_settings_submit(&$form, $form_state) {
-  gallery_assist_invalidate_cache();
+  //gallery_assist_invalidate_cache();
   $cq = "TRUNCATE TABLE {cache_gallery_assist_data}";
   db_query($cq);
   $type = $form_state['values']['node_type'];
@@ -1215,6 +1222,8 @@ function gallery_assist_settings_submit(&$form, $form_state) {
       'in_profile' => $form_state['values']['gallery_assist_'. $type .'_in_profile'],
       'show_layout' => $form_state['values']['gallery_assist_'. $type .'_show_layout'],
       'gallery_assist_weight' => $form_state['values']['gallery_assist_'. $type .'_gallery_assist_weight'],
+      'ga_db_order_field' => $form_state['values']['gallery_assist_'. $type .'_ga_db_order_field'],
+      'ga_db_order' => $form_state['values']['gallery_assist_'. $type .'_ga_db_order'],
    );
 
     if (module_exists('imagecache') && is_numeric($form_state['values']['gallery_assist_'. $type .'_pager_presetid'])) {
@@ -1327,19 +1336,17 @@ function gallery_assist_form_submit(&$form, &$form_state) {
     $node->gallery_items = $form_state['clicked_button']['#post']['gallery_items'];
   }
 
-  //if (empty($node->gid)) {
-  //  $node = node_load();
-    if (empty($node->gid)) {
-      $node->is_new = TRUE;
-      gallery_assist_insert($node);
-      drupal_set_message(t('The gallery places had to be recreated. Possible causes: The gallery feature was assigned to this content type after the creation of this article or the gallery-assist module has been reinstalled. In order to be able to upload pictures you have to save this node.'));
-    }
-    else {
-      gallery_assist_save($node, $user);
-    }
-  //}
-  
-  //gallery_assist_invalidate_cache();
+  //
+  if (empty($node->gid)) {
+    $node->is_new = TRUE;
+    gallery_assist_insert($node);
+    drupal_set_message(t('The gallery places had to be recreated. Possible causes: The gallery feature was assigned to this content type after the creation of this article or the gallery-assist module has been reinstalled. In order to be able to upload pictures you have to save this node.'));
+  }
+  else {
+    gallery_assist_save($node, $user);
+  }
+
+  // Clear the GA cache.
   $cq = "TRUNCATE TABLE {cache_gallery_assist_data}";
   db_query($cq, $node->nid);  
 }
@@ -1564,7 +1571,7 @@ function gallery_assist_save_one_js($pid = NULL) {
   }
   else {
     if (!$reset) {
-      //gallery_assist_invalidate_cache($nid);
+      // Clear the GA cache.
       $cq = "DELETE FROM {cache_gallery_assist_data} WHERE cid = '%s'";
       db_query($cq, $nid);
     }
@@ -1583,13 +1590,13 @@ function gallery_assist_save_one_js($pid = NULL) {
 }
 
 /**
- * Implementation of hook_load().1264039075
+ * Implementation of hook_load()
  */
 function gallery_assist_load(&$node) {
   global $user;
   $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
   $ga_c = array();
-  $nt_conf = array();
+  $nt_conf = variable_get('gallery_assist_'. $node->type .'_data', array());
   $nt_ic_conf = array();
   if (arg(0) == 'node' && arg(2) == 'edit') {
     $reset = TRUE;
@@ -1616,10 +1623,10 @@ function gallery_assist_load(&$node) {
     $udata = unserialize($additions->data);
     unset($additions->data);
     if (empty($udata['ga_db_order_field'])) {
-      $udata['ga_db_order_field'] = 'a.weight';
+      $udata['ga_db_order_field'] = $nt_conf['ga_db_order_field'];
     }
     if (empty($udata['ga_db_order'])) {
-      $udata['ga_db_order'] = 'DESC';
+      $udata['ga_db_order'] = $nt_conf['DESC'];
     }
 
     // Get gallery items data.
@@ -1648,7 +1655,6 @@ function gallery_assist_load(&$node) {
   
     // Build gallconf.
     if (variable_get('gallery_assist_'. $node->type, 0) == 1) {
-      $nt_conf = variable_get('gallery_assist_'. $node->type .'_data', array());
       $nt_conf_data = unserialize($nt_conf['data']);
 
       if (module_exists('imagecache') && variable_get('gallery_assist_use_imagecache', 0) == 1) {
@@ -1677,10 +1683,10 @@ function gallery_assist_load(&$node) {
       $additions->gallitems[$item->pid]->download_path = $item->opath;
 
       if (module_exists('transliteration')) {
-        //$additions->gallitems[$item->pid]->tpath = transliteration_get($item->tpath);
-        //$additions->gallitems[$item->pid]->ppath = transliteration_get($item->ppath);
-        //$additions->gallitems[$item->pid]->opath = transliteration_get($item->opath);
-        //$additions->gallitems[$item->pid]->thmb_path = transliteration_get($additions->gallitems[$item->pid]->thmb_path);
+        $additions->gallitems[$item->pid]->tpath = transliteration_get($item->tpath);
+        $additions->gallitems[$item->pid]->ppath = transliteration_get($item->ppath);
+        $additions->gallitems[$item->pid]->opath = transliteration_get($item->opath);
+        $additions->gallitems[$item->pid]->thmb_path = transliteration_get($additions->gallitems[$item->pid]->thmb_path);
       }
 
       if (!empty($item->exif)) {
@@ -1766,6 +1772,12 @@ function gallery_assist_load(&$node) {
     }
   }
 
+  // Load the settings of modules which are working with Gallery Assist.
+  $exteds_result = db_query("SELECT * FROM {gallery_assist_modules_settings} WHERE nid = %d", $node->nid);
+  while ($r = db_fetch_array($exteds_result)) {
+    $additions->gallconf[$node->type]['modules'][$r['module']] = $r;
+  }
+
   return $additions;
 }
 
@@ -1792,12 +1804,12 @@ function gallery_assist_insert(&$node) {
       'show_layout' => $data['show_layout'],
       'shadow' => $data['shadow'],
       'show_download_link' => $data['show_download_link'],
-      'ga_db_order_field' => 'weight',
-      'ga_db_order' => 'DESC',
+      'ga_db_order_field' => $data['ga_db_order_field'],
+      'ga_db_order' => $data['ga_db_order'],
     );
     $new_data = serialize($settings);
-  
-    if (!empty($node->translation_source->nid) || !empty($node->tnid)) {
+
+    if (!empty($node->translation_source->nid) || !empty($node->tnid) && $node->tnid > 0) {
       // Get ref by tranlation and check and upgrate the translation table
       // a exist item will be duplicated with the new language entrie
       if (!empty($node->translation_source->nid) || empty($node->tnid)) {
@@ -1899,11 +1911,8 @@ function gallery_assist_update($node) {
 
   $cq = "DELETE FROM {cache_gallery_assist_data} WHERE cid = '%s'";
   db_query($cq, $node->nid);
-  //$tq = "SELECT cid, created FROM {cache_gallery_assist_data} where cid = %d";
-  //$tres = db_result(db_query($tq, $node->nid));
 
   // Get data from principal gallery (the origen node from the translation)
-  // in_profile-, comments- and show_title-changes affecting the gallery and its dependencies
   $q = db_query("SELECT gid, gref, lang FROM {gallery_assist} WHERE ref = %d", $node->ref);
 
   // Save the settings to origen and translated galleries
@@ -1944,8 +1953,8 @@ function gallery_assist_update($node) {
     'hide_in_teaser' => !empty($node->hide_in_teaser) ? $node->hide_in_teaser : 0,
     'show_download_link' => $node->show_download_link,
     'item_effect' => !empty($node->item_effect) ? $node->item_effect : 'default',
-    'ga_db_order_field' => !empty($node->ga_db_order_field) ? $node->ga_db_order_field : 'weight',
-    'ga_db_order' => !empty($node->ga_db_order) ? $node->ga_db_order : 'DESC',
+    'ga_db_order_field' => $node->ga_db_order_field,
+    'ga_db_order' => $node->ga_db_order,
   );
   $new_data = serialize($settings);
 
@@ -2018,6 +2027,7 @@ function gallery_assist_update($node) {
 
   } // The owner is changed END.
 
+  // Update settings on original and on each translation node.
   while ($res = db_fetch_object($q)) {
     $update_data = array(
       'gid' => $res->gid,
@@ -2056,13 +2066,40 @@ function gallery_assist_update($node) {
     );
     drupal_write_record('gallery_assist_translated', $update_translated_data, 'nid');
   }
+
+  // Save the settings data from modules that are working with Gallery Assist.
+  foreach (module_implements('ga_expand') as $name) {
+    $function = $name .'_ga_expand';
+    $get_data = $node->$name;
+    $gam_data = serialize($get_data);
+
+    $key_name = 'gam_'. $name;
+    $gam = $node->$key_name;
+
+    if (isset($gam) && $gam > 0) {
+      $record = array(
+        'gam' => $gam,
+        'nid' => $node->nid,
+        'ref' => $node->ref,
+        'gid' => $node->gid,
+        'gref' => $node->gref,
+        'module' => $name,
+        'data' => $gam_data
+      );
+      drupal_write_record('gallery_assist_modules_settings', $record, 'gam');
+    }
+    else {
+      $q = db_query("insert into {gallery_assist_modules_settings} (nid, ref, gid, gref, module, data)
+           VALUES (%d, %d, %d, %d, '%s', '%s')",
+           $node->nid, $node->ref, $node->gid, $node->gref, $name, $gam_data);
+    }
+  }
 }
 
 /**
  * Implementation of hook_save().
  */
 function gallery_assist_save(&$node, $u = '') {
-  //gallery_assist_invalidate_cache($node->nid);
   $cq = "DELETE FROM {cache_gallery_assist_data} WHERE cid = '%s'";
   db_query($cq, $node->nid);
 
@@ -2075,7 +2112,7 @@ function gallery_assist_save(&$node, $u = '') {
 
   $cover = 0;
   $conf = $node->gallconf[$node->type];
-  $cover_res = db_result(db_query("SELECT count(pid) FROM {gallery_assist_item} WHERE cover = %d && gref = %d", 1, $node->gref));
+  $cover_res = db_result(db_query("SELECT count(pid) FROM {gallery_assist_item} WHERE cover = %d AND gref = %d", 1, $node->gref));
   if ($cover_res == 0) {
     $cover = 1;
   }
@@ -2157,7 +2194,8 @@ function gallery_assist_save(&$node, $u = '') {
             //'file_validate_size' => array($limits['file_size'], 1000000),
           );
 
-          if ($arch_file = file_save_upload('pictures'. $i, $arch_validators, $import_dir, $replace = FILE_EXISTS_REPLACE)) {
+          $arch_file = file_save_upload('pictures'. $i, $arch_validators, $import_dir, $replace = FILE_EXISTS_REPLACE);
+          if (count($arch_file)) {
 
             if (module_exists('gallery_assist_upport')) {
 
@@ -2194,12 +2232,7 @@ function gallery_assist_save(&$node, $u = '') {
           $validators = array(
             'file_validate_is_image' => array(),
           );
-          /*
-          if (preg_match('png', $node->gallconf[$node->type]['validate_upload']['extensions']) || 
-              preg_match('gif', $node->gallconf[$node->type]['validate_upload']['extensions']) || 
-              preg_match('jpeg', $node->gallconf[$node->type]['validate_upload']['extensions']) || 
-              preg_match('jpg', $node->gallconf[$node->type]['validate_upload']['extensions'])) {
-          */
+
           if (!empty($node->gallconf[$node->type]['validate_upload']['extensions'])) {
             $validators['file_validate_extensions'] = array($node->gallconf[$node->type]['validate_upload']['extensions']);
           }
@@ -2238,7 +2271,8 @@ function gallery_assist_save(&$node, $u = '') {
               }
             }
 
-            if ($upl_file = file_save_upload('pictures'. $i, $validators, $upload_dir, $replace)) {
+            $upl_file = file_save_upload('pictures'. $i, $validators, $upload_dir, $replace);
+            if (count($upl_file)) {
               $a = explode('/', $upl_file->filepath);
               $new_filename = end($a);
               $gallery_assist_thumbnail = $upload_dir .'/img/'. $new_filename;
@@ -2256,7 +2290,6 @@ function gallery_assist_save(&$node, $u = '') {
               else {
                 copy($upl_file->filepath, $gallery_assist_thumbnail);
               }
-              //gallery_assist_file_entries($node, $gallery_assist_thumbnail, 'img');
               @chmod($gallery_assist_thumbnail, 0664);
 
               if ($conf['use_imagecache'] == 0) {
@@ -2269,7 +2302,6 @@ function gallery_assist_save(&$node, $u = '') {
                 else {
                   copy($upl_file->filepath, $upload_thm);
                 }
-                //gallery_assist_file_entries($node, $upload_thm, 'thm');
                 @chmod($upload_thm, 0664);
 
                 if ($prev_size < $my_dim_ref) {
@@ -2279,7 +2311,7 @@ function gallery_assist_save(&$node, $u = '') {
                   copy($upl_file->filepath, $upload_prev);
                 }
                 @chmod($upload_prev, 0664);
-                //gallery_assist_file_entries($node, $upload_prev, 'prev');
+
                 // Clear the cached filesize and refresh the image information.
                 clearstatcache();
               }
@@ -2288,9 +2320,7 @@ function gallery_assist_save(&$node, $u = '') {
               file_set_status($upl_file, 1);
 
               $result = db_fetch_object(db_query("SELECT gid, gref FROM {gallery_assist} WHERE nid = %d", $node->nid));
-
               $item_count = db_result(db_query("SELECT count(pid) FROM {gallery_assist_item} WHERE nid = %d", $node->nid));
-
               $my_gref = $result->gref ? $result->gref : $result->gid;
 
               $insert_item_data = array(
@@ -2481,20 +2511,6 @@ function gallery_assist_makedirs(&$node) {
 }
 
 /**
- * Implementation of hook_myhooktest().
- */
-function gallery_assist_myhooktest() {
-  $data = array(
-    'gallery_assist' => array(
-      'uno' => 'primero',
-      'dos' => 'segundo',
-    ),
-  );
-
-  return $data;
-}
-
-/**
  * Invoke a hook_myhooktest() operation in all modules.
  *
  * @param &$node
@@ -2508,7 +2524,6 @@ function gallery_assist_myhooktest() {
  */
 function gallery_assist_invoke_myhooktest(&$node, $op, $a3 = NULL, $a4 = NULL) {
   $return = array();
-  $imps = module_implements('myhooktest');
 
   foreach (module_implements('myhooktest') as $name) {
     $function = $name .'_myhooktest';
@@ -2600,6 +2615,10 @@ function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
             $node->content['my_gallery_field'] = array(
               '#value' => gallery_assist_include_display($node, 'page', $user, $display_extra),
               '#weight' => $node->gallery_assist_weight,
+              //'#type' => 'fieldset',
+              //'#collapsed' => TRUE,
+              //'#collapsible' => TRUE,
+              //'#title' => 'Container',
             );
           }
         }
@@ -2771,7 +2790,8 @@ function gallery_assist_display_item_default($node, $pid, $global_node_type_sett
     }
 
     // We use the if to avoid division by zero if the image path is wrong
-    if ($img = image_get_info($node->gallitems[$pid]->ppath)) {
+    $img = image_get_info($node->gallitems[$pid]->ppath);
+    if (count($img)) {
       $ratio = $img['width'] / $img['height'];
 
       //CASE LIMIT ON WIDTH
@@ -2887,23 +2907,33 @@ function gallery_assist_display_item_default($node, $pid, $global_node_type_sett
 
     gallery_assist_add_css('gallery_assist');
     $output  = theme('gallery_assist_item', $item);
-    //$output .= '<div>'. l('back link to the lightbox', $item->ppath) .'</div>';
 
-    // PROTOTYPE - COMMENTS.
-    if (module_exists('gallery_assist_comments') && $node->comments == 1) {
-      $cmm_count = db_result(db_query("SELECT count(*) FROM {gallery_assist_comments} WHERE pid = %d", $pid));
+    $node_light = $item;
+    $node_light->info = $img;
+    $node_light->uid = $node->uid;
+    $node_light->pid = $pid;
+    $node_light->nid = $node->nid;
+    $node_light->ref = $node->ref;
+    $node_light->gid = $node->gid;
+    $node_light->gref = $node->gref;
+    $node_light->opath = $node->gallitems[$pid]->opath;
 
-      $comm_attr = array(
-        'id' => 'gallery-assist-comments-container',
-        'style' => 'max-width:'. $node->gallconf[$node->type]['preview_size'] .'px;',
-      );
-
-      $comm_attr['style'] .= $item->extra_styles;
-      $output .= '<div '. drupal_attributes($comm_attr) .'>';
-      $output .= drupal_get_form('gallery_assist_comments_myform', $node);
-      $output .= '</div>';
-
-    } // END OF PROTOTYPE.
+    $results = array();
+    foreach (module_implements('ga_expand') as $name) {
+      $function = $name .'_ga_expand';
+      $node_light->node_settings = unserialize($node->gallconf[$node->type]['modules'][$name]['data']);
+      $result = $function('view', $pid, $node_light);
+      if (is_string($result)) {
+        $results[] = array(
+          '#value' => $result,
+          '#weight' => 2000,
+        );
+      }
+      elseif (is_array($result) && count($result) > 0) {
+        $results[] = $result;
+      }
+    }
+    $output .= drupal_render($results);
 
     return $output;
   }
@@ -2932,30 +2962,30 @@ function theme_gallery_assist_item_submitted($node) {
  * @ingroup themeable
  */
 function theme_gallery_assist_item($item = array()) {
-  $output .= ' <div class="clear-block gallery-assist-item-container">';
-  $output .= '   <div id="node-'. $item->nid .'" class="node">';
-  $output .= '     <span class="submitted">'. $item->submitted .'</span>';
-  $output .= '     <div class="clear-block">'. $item->links .'</div>';
-  $output .= '     <div class="content clear-block">';
-  if ($item->top == 1 || $item->top == 3) $output .= '       <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block">'. $item->pager .'</div>';
-  $output .= '       <div id="ga-image-display" class="'. $item->nodetype .' ga-image-display" style="max-width:'. $item->preview_size .'px; max-height:'. $item->preview_size .'px;'. $item->extra_styles . $item->img_extra_styles .'">';
+  $output .= ' <div class="clear-block gallery-assist-item-container">'."\n";
+  $output .= '   <div id="node-'. $item->nid .'" class="node">'."\n";
+  $output .= '     <span class="submitted">'. $item->submitted .'</span>'."\n";
+  $output .= '     <div class="clear-block">'. $item->links .'</div>'."\n";
+  $output .= '     <div class="content clear-block">'."\n";
+  if ($item->top == 1 || $item->top == 3) $output .= '       <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block">'. $item->pager .'</div>'."\n";
+  $output .= '       <div id="ga-image-display" class="'. $item->nodetype .' ga-image-display" style="max-width:'. $item->preview_size .'px; max-height:'. $item->preview_size .'px;'. $item->extra_styles . $item->img_extra_styles .'">'."\n";
   $output .= $_GET['links'] == 'on' ? $item->adm_link : '';
   $output .= $item->img;
   $output .= '</div>';
-  if ($item->top == 0 || $item->top == 3) $output .= '       <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block">'. $item->pager .'</div>';
-  $output .= empty($item->copyright) ? '' : '       <div id="gallery-item-copyright" class="'. $item->nodetype .' gallery-item-copyright" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">&copy; '. $item->copyright .'</div>';
+  if ($item->top == 0 || $item->top == 3) $output .= '       <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block">'. $item->pager .'</div>'."\n";
+  $output .= empty($item->copyright) ? '' : '       <div id="gallery-item-copyright" class="'. $item->nodetype .' gallery-item-copyright" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">&copy; '. $item->copyright .'</div>'."\n";
   if ($item->ptitle) {
-    $output .= '       <div id="gallery-item-caption-title" class="'. $item->nodetype .' gallery-item-caption-title" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">'. $item->ptitle .'</div>';
+    $output .= '       <div id="gallery-item-caption-title" class="'. $item->nodetype .' gallery-item-caption-title" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">'. $item->ptitle .'</div>'."\n";
   }
   if ($item->pdescription) {
-    $output .= '       <div id="gallery-item-caption-text" class="'. $item->nodetype .' gallery-item-caption-text" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">'. $item->pdescription .'</div>';
+    $output .= '       <div id="gallery-item-caption-text" class="'. $item->nodetype .' gallery-item-caption-text" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">'. $item->pdescription .'</div>'."\n";
   }
   if ($item->allow_download == 1) {
-    $output .= '       <div id="gallery-item-download-link" class="'. $item->nodetype .' gallery-item-download-link" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'"><a href="'. $item->download_path .'">Download</a></div>';
+    $output .= '       <div id="gallery-item-download-link" class="'. $item->nodetype .' gallery-item-download-link" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'"><a href="'. $item->download_path .'">Download</a></div>'."\n";
   }
-  $output .= '     </div>';
-  $output .= '   </div>';
-  $output .= ' </div>';
+  $output .= '     </div>'."\n";
+  $output .= '   </div>'."\n";
+  $output .= ' </div>'."\n";
 
   return $output;
 }
@@ -3585,7 +3615,7 @@ function gallery_assist_block_t_helper($delta, $l) {
  * It should be a theme.
  *  - I less it for future versions.
  */
-function gallery_assist_build_block_item($link, $op = 'pic', $conf, $item_height = 0) {
+function gallery_assist_build_block_item($link, $op = 'pic', $conf = array(), $item_height = 0) {
   $attr = array(
     'class' => 'gab-item-'. $op,
   );
@@ -3604,7 +3634,6 @@ function gallery_assist_build_block_item($link, $op = 'pic', $conf, $item_height
   $output .= '</div>';
   
   return $output;
-
 }
 
 /**
@@ -4138,25 +4167,21 @@ function gallery_assist_file_download($filepath) {
   }
 }
 
-/** 
- * Execute the entries of images from Gallery Assist in the files table
- * 
- * @param $file
- *    An string containing the image original path from the uploaded file.
- *  
- * @return
- *    TRUE or FALSE
- 
-function gallery_assist_file_entries($node, $filepath, $ga_preset) {
-  $file = array(
-    'uid' => $node->uid,
-    'filename' => basename($filepath),
-    'filepath' => $filepath,
-    'filemime' => $image_info['mime_type'], //module_exists('mimedetect') ? mimedetect_mime($file) : file_get_mimetype($file['filepath']),
-    'filesize' => $image_info['file_size'],
-    'status' => FILE_STATUS_PERMANENT,
-    'timestamp' => time(),
-  );
-  // Insert the new record to the database.
-  drupal_write_record('files', $file);
-}*/
+/**
+ * Provide the GA content type assignments.
+ *
+ * @return array
+ *   The array ist keyed with types an contains the type names.
+ */
+function gallery_assist_get_assignments() {
+  $assignments = array();
+  $types = node_get_types('names');
+
+  foreach ($types as $type => $name) {
+    if (variable_get('gallery_assist_'. $type, 0) == 1 && $type != 'gallery_assist') {
+      $assignments[$type] =  $name;
+    }
+  }
+
+  return $assignments;
+}

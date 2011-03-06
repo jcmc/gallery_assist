@@ -1,10 +1,17 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.26 2010/04/22 16:28:33 jcmc Exp $
+// $Id: gallery_assist.admin.inc,v 1.27 2010/05/18 22:27:32 jcmc Exp $
 
 /**
  * @file
  * Administration page from Gallery Assist.
  */
+
+/**
+ * Info data.
+ */ 
+function gallery_assist_info_data() {
+  return 'Hallo Welt';
+}
 
 /**
  * Settings form.
@@ -846,7 +853,7 @@ function gallery_assist_upload_settings($type, $settings) {
   if (!empty($settings['validate_upload']['resolution'])) {
     $sizes = explode('x', $settings['validate_upload']['resolution']);
     $compare1 = $sizes[0] > $sizes[1] ? $sizes[0] : $sizes[1];
-    $compare2 = module_exists('imagecache') && variable_set('gallery_assist_use_imagecache', 0) == 1 ? $settings['preview_size'] : $settings['upload_prev'];
+    $compare2 = module_exists('imagecache') && variable_get('gallery_assist_use_imagecache', 0) == 1 ? $settings['preview_size'] : $settings['upload_prev'];
     if ($compare1 < $compare2) {
       $settings['validate_upload']['resolution'] = $compare2 .'x'. $compare2;
     }
