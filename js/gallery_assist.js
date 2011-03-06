@@ -25,3 +25,4 @@ Drupal.behaviors.ga_warning_by_change_caption = function (context) {
     $('#my-' + id).css('display', 'none');
   });
 }
+

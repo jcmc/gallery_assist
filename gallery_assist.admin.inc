@@ -1,15 +1,16 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.5 2009/11/18 18:23:43 jcmc Exp $
+// $Id: gallery_assist.admin.inc,v 1.9 2009/12/03 14:17:26 jcmc Exp $
 
 /**
  * @file
  * Drupal content type with gallery functionality. Administration page.
+ * 
  */
 
 /**
  * Settings form
  */ 
-function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_name = NULL) {
+function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_name = '') {
 
   global $base_path;
   drupal_add_css(drupal_get_path('module', 'gallery_assist') .'/css/gallery_assist.css', 'module', 'all', FALSE);
@@ -136,32 +137,32 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#suffix' => '</div>',
   );
 
-  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_gap_align'] = array(
-    '#type' => 'select',
-    '#title' => t('Pager align'),
-    '#options' => array(0 => t('off'), 1 => t('on')),
-    '#default_value' => $settings['gap_align'],
-  );
-
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_ga_align'] = array(
     '#type' => 'select',
-    '#title' => t('Container align'),
-    '#options' => array(0 => t('off'), 1 => t('on')),
-    '#default_value' => $settings['ga_align'],
+    '#title' => t('Teaser container align'),
+    '#options' => array('none' => 'none', 'left' => 'left', 'center' => 'center', 'right' => 'right'),
+    '#default_value' => $settings['layout']['ga_align'],
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_gap_align'] = array(
+    '#type' => 'select',
+    '#title' => t('Page container align'),
+    '#options' => array('none' => 'none', 'left' => 'left', 'center' => 'center', 'right' => 'right'),
+    '#default_value' => $settings['layout']['gap_align'],
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_t_ga_float'] = array(
     '#type' => 'select',
-    '#title' => t('Teaser-Container float'),
+    '#title' => t('Teaser container float'),
     '#options' => array('none' => t('none'), 'left' => t('left'),'right'  => t('right')),
-    '#default_value' => $settings['t_ga_float'],
+    '#default_value' => $settings['layout']['t_ga_float'],
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_p_ga_float'] = array(
     '#type' => 'select',
-    '#title' => t('Page-Container float'),
+    '#title' => t('Page container float'),
     '#options' => array('none' => t('none'), 'left' => t('left'),'right'  => t('right')),
-    '#default_value' => $settings['p_ga_float'],
+    '#default_value' => $settings['layout']['p_ga_float'],
   );
 
   // Pager.
@@ -169,7 +170,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#type' => 'fieldset',
     '#title' => t('Pager'),
     '#collapsible' => TRUE,
-    //'#collapsed' => TRUE,
+    '#collapsed' => TRUE,
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_pager']['gallery_assist_'. $type .'_pager_symbol'] = array(
@@ -277,6 +278,7 @@ function gallery_assist_settings_extras() {
     '#prefix' => '<div class="gallery-assist-settings-left">',
     '#suffix' => '</div>',
   );
+  /*
   $form['gallery_assist_extras']['gallery_assist_upload_conf']['gallery_assist_upload_name_filter'] = array(
     '#type' => 'select',
     '#title' => t('Files name filter'),
@@ -285,7 +287,7 @@ function gallery_assist_settings_extras() {
     '#description' => t('The filter "only alpha numeric" removes all symbols, except alphanumeric characters from the file name. The filter "alpha numeric & white spaces" removes all symbols, except alphanumeric characters and white spaces from the file name.'),
     '#prefix' => '<div class="gallery-assist-settings-left">',
     '#suffix' => '</div>',
-  );
+  );*/
 
   // Assigments
   if (user_access('administer gallery_assist')) {
@@ -462,3 +464,4 @@ function gallery_assist_copyright() {
     '@qtg_link' => url('http://www.quiptime.com'),
   ));
 }
+

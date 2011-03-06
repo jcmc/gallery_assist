@@ -1,4 +1,4 @@
-/* $Id: gallery_assist.css,v 1.3 2009/11/18 18:23:43 jcmc Exp $ */
+/* $Id: gallery_assist.css,v 1.8 2009/12/03 14:17:26 jcmc Exp $ */
 
 /* Gallery assist admin. */
 #gallery-assist-users-help {
@@ -13,6 +13,12 @@
   float:left;
   padding: 0 10px;
   width:30%;
+}
+
+.gallery-assist-settings-left-half {
+  float:left;
+  padding: 0 10px;
+  width:45%;
 }
 
 /* gallery_assist container */
@@ -34,10 +40,13 @@
 
 /* gallery_assist item preview */
 #gallery-item-caption-title {
-  
   font-weight: bold;
 }
 
+/* pager */
+#ga-pager-box {
+  clear:both;
+}
 
 /* gallery_assist item preview pager */
 #ga-pager-box ul.pager {
@@ -62,5 +71,49 @@
   text-align:center;
 }
 
+/* gallery_assist shows as list */
+#gallery-container .item-box-list {
+  clear:left;
+  display:block;
+}
 
+#gallery-item-caption-title, .title-box-on-list {
+  font-weight: bold;
+}
 
+.item-box-row {
+  /*border-bottom:1px solid;
+  border-color:#AAAAAA;*/
+  padding:15px 10px 10px 10px;
+}
+
+.gallery-container .odd {
+  background:#EDF5FA;
+}
+
+/*
+.item-box {
+  margin-top:5px;
+}*/
+
+.ga-common-block-links {
+
+}
+
+#blok-gallery-container, 
+#blok-gallery-container.item-box {
+  background: transparent;
+  margin-top:0;
+}
+
+.ga-common-block-pics {
+  line-height: 0;
+  float: left;
+  margin: 2px;
+}
+
+.thmb_form_image {
+  height:80px;
+  width:80px;
+  text-align:center;
+}

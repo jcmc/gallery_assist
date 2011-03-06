@@ -1,8 +1,9 @@
 <?php
-// $Id: gallery_assist.module,v 1.10 2009/11/18 18:27:37 jcmc Exp $
+// $Id: gallery_assist.module,v 1.21 2009/12/03 14:17:26 jcmc Exp $
 /**
  * @file
  * Drupal content type with gallery functionality.
+ * 
  */
 
 /**
@@ -14,7 +15,10 @@ function gallery_assist_init() {
   // Create the user gallery_assist directory if the user has the right permission.
   $gallery_assist_paths[] = variable_get('gallery_assist_directory', file_directory_path() .'/gallery_assist');
   $gallery_assist_paths[] = $user->uid;
-
+  
+  //if (isset($destination) && !file_prepare_directory($destination, FILE_CREATE_DIRECTORY)) {
+    //watchdog('file', 'The upload directory %directory for the file field !name could not be created or is not accessible. A newly uploaded file could not be saved in this directory as a consequence, and the upload was canceled.', array('%directory' => $destination, '!name' => $element['#field_name']));
+    
   if (file_check_directory($gallery_assist_paths[0], 1)) {
     $gallery_assist_user_upload_path = implode('/', $gallery_assist_paths);
 
@@ -79,7 +83,7 @@ function gallery_assist_users_help() {
 
 /**
  * Implementation of hook_node_info().
- * insert the gallery_assist node type in the data base
+ * insert the new node type in the data base 
  */
 function gallery_assist_node_info() {
   return array(
@@ -90,7 +94,7 @@ function gallery_assist_node_info() {
       'has_title' => TRUE,
       'title_label' => t('Gallery title'),
       'has_body' => TRUE,
-      'body_label' => t('Gallery description'),
+      'body_label' => t('Gallery Description'),
     )
   );
 }
@@ -205,7 +209,7 @@ function gallery_assist_menu() {
     'title' => 'Gallery Assist',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
-  );
+  );//block/15
 
   // Upload ahah callback.
   $items['gallery_assist_upload/js'] = array(
@@ -350,8 +354,11 @@ function gallery_assist_theme() {
     'gallery_assist_display' => array(
       'arguments' => array('pager' => NULL, 'boxes' => NULL, 'conf' => NULL, $type => NULL),
     ),
-    'gallery_assist_list_display' => array(
+    'gallery_assist_display_list' => array(
       'arguments' => array('pager' => NULL, 'boxes' => NULL, 'conf' => NULL, $type => NULL),
+    ),
+    'gallery_assist_block_display' => array(
+      'arguments' => array('boxes' => NULL, 'conf' => NULL, $type => NULL, $more => NULL),
     ),
     'gallery_assist_item_submitted' => array(
       'arguments' => array('node' => NULL),
@@ -368,6 +375,12 @@ function gallery_assist_theme() {
     'gallery_assist_list_item_box' => array(
       'arguments' => array('ga_item_box' => NULL, 'ga_item_title' => NULL, 'ga_edit_link' => NULL, 'ga_item_attr' => NULL),
     ),
+    'gallery_assist_original_download_link' => array(
+      'arguments' => array('item' => NULL),
+    ),
+    'gallery_assist_item_box_list' => array(
+      'arguments' => array('ga_item_list_attr' => NULL, 'ga_item_box' => NULL, 'ga_item_title' => NULL, 'ga_item_copyright' => NULL, 'ga_item_desc' => NULL, 'ga_edit_link' => NULL, 'ga_item_attr' => NULL),
+    ),
   );
 }
 
@@ -376,15 +389,17 @@ function gallery_assist_theme() {
  */
 function gallery_assist_form(&$node, $form_state) {
   $type = node_get_types('type', $node);
-
+  $form = array();
+  
   if (user_access('create gallery_assist content')) {
+    
     // The title of gallery assist node type.
     if ($type->has_title) {
       $form['title'] = array(
         '#type' => 'textfield',
         '#title' => check_plain($type->title_label),
         '#required' => TRUE,
-        '#default_value' => check_plain($node->title),
+        '#default_value' => $node->title,
         '#weight' => -25,
       );
     }
@@ -395,6 +410,7 @@ function gallery_assist_form(&$node, $form_state) {
       $form['body_field']['#weight'] = -20;
       $form['body_field']['body']['#rows'] = 5;
     }
+
   }
 
   return $form;
@@ -414,9 +430,9 @@ function gallery_assist_nodetypes_submit(&$form, $form_state) {
     variable_set('gallery_assist_upload_method', $form_state['values']['gallery_assist_upload_method']);
   }
 
-  if (variable_get('gallery_assist_upload_name_filter', 1) != $form_state['values']['gallery_assist_upload_name_filter']) {
-    variable_set('gallery_assist_upload_name_filter', $form_state['values']['gallery_assist_upload_name_filter']);
-  }
+//  if (variable_get('gallery_assist_upload_name_filter', 1) != $form_state['values']['gallery_assist_upload_name_filter']) {
+//    variable_set('gallery_assist_upload_name_filter', $form_state['values']['gallery_assist_upload_name_filter']);
+//  }
 
   foreach ($node_types as $type) {
     if (variable_get('gallery_assist_'. $type->type, 0) != $form_state['values']['gallery_assist_'. $type->type]) {
@@ -460,10 +476,13 @@ function gallery_assist_settings_submit(&$form, $form_state) {
         'show_backlink' => $form_state['values']['gallery_assist_'. $type .'_show_backlink'],
         'show_toggle' => $form_state['values']['gallery_assist_'. $type .'_show_toggle'],
         'show_title' => $form_state['values']['gallery_assist_'. $type .'_show_title'],
-        'ga_align' => $form_state['values']['gallery_assist_'. $type .'_ga_align'],
-        'gap_align' => $form_state['values']['gallery_assist_'. $type .'_gap_align'],
-        'ga_float' => $form_state['values']['gallery_assist_'. $type .'_ga_float'],
-        'gap_float' => $form_state['values']['gallery_assist_'. $type .'_ga_float'],
+        'layout' => array(
+          'ga_align' => $form_state['values']['gallery_assist_'. $type .'_ga_align'],
+          'gap_align' => $form_state['values']['gallery_assist_'. $type .'_gap_align'],
+          't_ga_float' => $form_state['values']['gallery_assist_'. $type .'_t_ga_float'],
+          'p_ga_float' => $form_state['values']['gallery_assist_'. $type .'_p_ga_float'],
+        ),
+        'show_in_homepage_block' => $form_state['values']['gallery_assist_'. $type .'_show_in_homepage_block'],
         'position_toggle' => $form_state['values']['gallery_assist_'. $type .'_position_toggle'],
         'title_substr' => $form_state['values']['gallery_assist_'. $type .'_title_substr'],
         'pager_symbol' => $form_state['values']['gallery_assist_'. $type .'_pager_symbol'],
@@ -490,6 +509,7 @@ function gallery_assist_recovery(&$form, $form_state, $form_id) {
  */
 function gallery_assist_form_alter(&$form, $form_state, $form_id) {
   global $user;
+
   $node = $form['#node'];
 
   if ($node->type .'_node_form' == $form_id && variable_get('gallery_assist_'. $node->type, 0) == 1 && 
@@ -498,126 +518,211 @@ function gallery_assist_form_alter(&$form, $form_state, $form_id) {
     user_access('edit own gallery_assist_'. $node->type .' content', $user) ||
     user_access('edit any gallery_assist_'. $node->type .' content', $user)) {
 
-  // Note on the order of the process of "create gallery assist node"
-  $hepl_path_tail = $node->type == 'gallery_assist' ? '' : '_'. $node->type;
-  if (arg(1) == 'add' && variable_get('gallery_assist_'. $form['#node']->type, 0) == 1) {
-    global $base_url;
-    drupal_set_message(t('This node must be saved before you can add items to the gallery. Read more about in the <a href="@help_link">@help</a>.', array('@help' => t('help'), '@help_link' => url($base_url .'/gallery_assist'. $hepl_path_tail .'/help#ga_why'))));
-  }
-
-  if ($node->nid && variable_get('gallery_assist_'. $node->type, 0) == 1) {
-    $form['#validate'][] = 'gallery_assist_validate';
-    $form['gallery_assist_settings'] = array(
-      '#type' => 'fieldset',
-      '#access' => $node->type == 'gallery_assist' ? user_access('create gallery_assist content') : user_access('create gallery_assist_'. $node->type .' content'),
-      '#title' => t('Settings to this Gallery'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#weight' => -3.9,
-    );
-
-    $this['show_title'] = $node->show_title == 1 ? t('Uncheck to hide the images titles.') : t('Check to display the image titles.');
-    $form['gallery_assist_settings']['show_title'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Show titles'),
-      '#default_value' => $node->show_title,
-      '#description' => $this['show_title'],
-    );
-
-    $form['gallery_assist_settings']['layout'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Layout'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
-
-    $form['gallery_assist_settings']['layout']['ga_align'] = array(
-      '#type' => 'select',
-      '#title' => t('Alignment'),
-      '#default_value' => $node->gallconf[$node->type]['layout']['ga_align'],
-      '#options' => array('none' => 'none', 'lelf' => 'left', 'center' => 'center', 'right' => 'right'),
-    );
-
-    $form['gallery_assist_settings']['layout']['gap_align'] = array(
-      '#type' => 'select',
-      '#title' => t('Pager float'),
-      '#default_value' => $node->gallconf[$node->type]['layout']['gap_align'],
-      '#options' => array('none' => 'none', 'lelf' => 'left', 'center' => 'center', 'right' => 'right'),
-    );
-
-    $form['gallery_assist_settings']['layout']['t_ga_float'] = array(
-      '#type' => 'select',
-      '#title' => t('Teaser container float'),
-      '#default_value' => $node->gallconf[$node->type]['layout']['t_ga_float'],
-      '#options' => array('none' => 'none', 'lelf' => 'left', 'center' => 'center', 'right' => 'right'),
-    );
-
-    $form['gallery_assist_settings']['layout']['p_ga_float'] = array(
-      '#type' => 'select',
-      '#title' => t('Page container float'),
-      '#default_value' => $node->gallconf[$node->type]['layout']['p_ga_float'],
-      '#options' => array('none' => 'none', 'lelf' => 'left', 'center' => 'center', 'right' => 'right'),
-    );
-
-    // Toggle to display or hide items shadows.
-    // Now work this option only in Windows Firefox and Safary.
-    $this['shadow'] = $node->shadow == 1 ? t('Uncheck to desable the items shadow. (only win)') : t('Check to enable the items shadow. (only win)');
-    $form['gallery_assist_settings']['shadow'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Shadow'),
-      '#default_value' => $node->shadow,
-      '#description' => $this['shadow'],
-    );
-
-    $form['gallery_assist_settings']['gallery_assist_weight'] = array(
-      '#type' => 'select',
-      '#title' => t('Weight'),
-      '#default_value' => $node->gallery_assist_weight,
-      '#options' => drupal_map_assoc(range(-50, 50)),
-      '#description' => t('Choose the gallery container position on this node.'),
-    );
-
-    $form['ref'] = array(
-      '#type' => 'hidden',
-      '#value' => $node->ref ? $node->ref : $node->nid,
-    );
-
-    // Form to the upload process .
-    $form['gallery_assist_item'] = array(
-      '#type' => 'fieldset',
-      '#access' => $node->type == 'gallery_assist' ? user_access('create gallery_assist content') : user_access('create gallery_assist_'. $node->type .' content'),
-      '#title' => t('Gallery: Add and edit gallery items'),
-      '#collapsible' => TRUE,
-      '#collapsed' => empty($node->gallitems),
-      '#prefix' => '<div class="gallery_assist_list">',
-      '#suffix' => '</div>',
-      '#weight' => -3.1,
-      '#description' => t('Click Update to upload a new file or to save your changes in this section.'),
-    );
-
-    if (count($node->gallitems) > 20) {
-      $form['gallery_assist_item']['#collapsed'] = TRUE;
-      $form['gallery_assist_item']['#suffix'] = '<div class="warning">'. t('If to many items you can use the <strong>Edit one item</strong> link displayed by the item view.') .'</div>';
+    if ($node->type == 'book' && arg(2) == 'outline') {
+      return;
     }
 
-    // Wrapper for fieldset contents (used by ahah.js).
-    $form['gallery_assist_item']['wrapper'] = array(
-      '#prefix' => '<div id="gallery-assist-list-wrapper">',
-      '#suffix' => '</div>',
-    );
+    // Note on the order of the process of "create gallery assist node"
+    $help_path_tail = $node->type == 'gallery_assist' ? '' : '_'. $node->type;
+    if (arg(1) == 'add' && variable_get('gallery_assist_'. $form['#node']->type, 0) == 1) {
+      global $base_url;
+      $this['help']['layout'] = array(
+        'module' => 'gallery_assist',
+        'help_link' => 'why-save-before-upload',
+        'text' => t('This node must be saved before you can add items to the gallery. Read more about in the <a href="@help_link">@help</a>.', array('@help' => t('help'), '@help_link' => url($base_url .'/gallery_assist'. $help_path_tail .'/help#ga_why'))),
+      );
+      $help_string = gallery_assist_avanced_help_builder($this['help']['layout']);
+      drupal_set_message($help_string);
+    }
 
-    // It sends the current user as a reference, if administrators make
-    // changes in the author information of the node.
-    $form['gallery_assist_item']['current_owner'] = array(
-      '#type' => 'value',
-      '#value' => $node->uid,
-    );
+    if (isset($node->nid) && variable_get('gallery_assist_'. $node->type, 0) == 1) {
 
-    $form['gallery_assist_item']['wrapper'] += _gallery_assist_form($node);
-    $form['#attributes']['enctype'] = 'multipart/form-data';
-    $form['#submit'][] = 'gallery_assist_form_submit';
+      $form['#validate'][] = 'gallery_assist_validate';
+      
+      $this['help']['layout'] = array(
+        'module' => 'gallery_assist',
+        'help_link' => 'settings-to-this-gallery',
+        'text' => t('Read the short help in case you are not secure please by this settings.'),
+      );
+      $form['gallery_assist_settings'] = array(
+        '#type' => 'fieldset',
+        '#access' => $node->type == 'gallery_assist' ? user_access('create gallery_assist content') : user_access('create gallery_assist_'. $node->type .' content'),
+        '#title' => t('Settings to this Gallery'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => -3.9,
+        //'#description' => gallery_assist_avanced_help_builder($this['help']['layout']),
+      );
+
+      if ($node->uid == $user->uid && user_access('administer gallery_assist', $user) ||
+          user_access('administer gallery_assist_'. $node->type, $user)) {
+          $this['help']['block'] = array(
+            'module' => 'gallery_assist',
+            'help_link' => 'gallery-assist-block-options',
+            'text' => t('Check to display this Gallery in the Site Galleries Block.'),
+          );
+          $help_string = gallery_assist_avanced_help_builder($this['help']['block']);
+          $form['gallery_assist_settings']['show_in_homepage_block'] = array(
+            '#type' => 'checkbox',
+            '#title' => t('Show in block'),
+            '#default_value' => $node->show_in_homepage_block,
+            '#description' => $help_string,
+            '#prefix' => '<div class="gallery-assist-settings-left">',
+            '#suffix' => '</div>',
+          );
+      }
+
+      $form['gallery_assist_settings']['gallery_assist_weight'] = array(
+        '#type' => 'select',
+        '#title' => t('Gallery container weight'),
+        '#default_value' => $node->gallery_assist_weight,
+        '#options' => drupal_map_assoc(range(-50, 50)),
+        '#description' => t('Choose the gallery container position on this node.'),
+        '#prefix' => '<div class="gallery-assist-settings-left">',
+        '#suffix' => '</div><div class="clear-block"></div>',
+      );
+
+      $this['help']['layout'] = array(
+        'module' => 'gallery_assist',
+        'help_link' => 'gallery-assist-node-layout-settings',
+        'text' => t('Do not use this section please. It is intern deactivated. in the next days with version 1.7.2 it is enable and compatible with the lightboxes and the new feature "list"'),
+      );
+      $form['gallery_assist_settings']['layout'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Extra layout settings'),
+        '#collapsible' => TRUE,
+        //'#collapsed' => TRUE,
+        //'#description' => gallery_assist_avanced_help_builder($this['help']['layout']),
+      );
+
+      $form['gallery_assist_settings']['layout']['common'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Common'),
+        '#prefix' => '<div class="gallery-assist-settings-left">',
+        '#suffix' => '</div>',
+      );
+
+      $form['gallery_assist_settings']['layout']['teaser'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Teaser container'),
+        '#prefix' => '<div class="gallery-assist-settings-left">',
+        '#suffix' => '</div>',
+      );
+
+      $form['gallery_assist_settings']['layout']['Page'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Page container'),
+        '#prefix' => '<div class="gallery-assist-settings-left">',
+        '#suffix' => '</div>',
+      );
+
+      $form['gallery_assist_settings']['layout']['common']['show_layout'] = array(
+        '#type' => 'select',
+        '#title' => t('Show this gallery as'),
+        '#default_value' => empty($node->gallconf[$node->type]['show_layout']) ? 'grid' : $node->gallconf[$node->type]['show_layout'],
+        '#options' => array('list' => 'List', 'grid' => 'Grid'),
+      );
+
+      $this['show_title'] = $node->show_title == 1 ? t('Uncheck to hide the images titles.') : t('Check to display the image titles.');
+      $form['gallery_assist_settings']['layout']['common']['show_title'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Show titles'),
+        '#default_value' => $node->show_title,
+        '#description' => $this['show_title'],
+      );
+
+      // Toggle to display or hide items shadows.
+      // Now work this option only in Windows Firefox and Safary.
+      $this['shadow'] = $node->shadow == 1 ? t('Uncheck to desable the items shadow. (only win)') : t('Check to enable the items shadow. (only win)');
+      $form['gallery_assist_settings']['layout']['common']['shadow'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Shadow'),
+        '#default_value' => $node->shadow,
+        '#description' => $this['shadow'],
+      );
+  
+      $form['gallery_assist_settings']['layout']['teaser']['ga_align'] = array(
+        '#type' => 'select',
+        '#title' => t('Align'),
+        '#default_value' => $node->gallconf[$node->type]['layout']['ga_align'],
+        '#options' => array('none' => 'none', 'left' => 'left', 'center' => 'center', 'right' => 'right'),
+      );
+  
+      $form['gallery_assist_settings']['layout']['Page']['gap_align'] = array(
+        '#type' => 'select',
+        '#title' => t('Align'),
+        '#default_value' => $node->gallconf[$node->type]['layout']['gap_align'],
+        '#options' => array('none' => 'none', 'left' => 'left', 'center' => 'center', 'right' => 'right'),
+      );
+  
+      $form['gallery_assist_settings']['layout']['teaser']['t_ga_float'] = array(
+        '#type' => 'select',
+        '#title' => t('Float'),
+        '#default_value' => $node->gallconf[$node->type]['layout']['t_ga_float'],
+        '#options' => array('none' => 'none', 'left' => 'left', 'right' => 'right'),
+      );
+  
+      $form['gallery_assist_settings']['layout']['Page']['p_ga_float'] = array(
+        '#type' => 'select',
+        '#title' => t('Float'),
+        '#default_value' => $node->gallconf[$node->type]['layout']['p_ga_float'],
+        '#options' => array('none' => 'none', 'left' => 'left', 'right' => 'right'),
+      );
+  
+      $form['ref'] = array(
+        '#type' => 'hidden',
+        '#value' => $node->ref ? $node->ref : $node->nid,
+      );
+
+      // Form to the upload process .
+      $form['gallery_assist_item'] = array(
+        '#type' => 'fieldset',
+        '#access' => $node->type == 'gallery_assist' ? user_access('create gallery_assist content') : user_access('create gallery_assist_'. $node->type .' content'),
+        '#title' => t('Gallery: Add and edit gallery items') .' ('. count($node->gallitems) .')',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE, //empty($node->gallitems),
+        '#prefix' => '<div class="gallery_assist_list">',
+        '#suffix' => '</div>',
+        '#weight' => -3.1,
+        '#description' => t('Click Update to upload a new file or to save your changes in this section.'),
+      );
+  
+      if (count($node->gallitems) > 20) {
+        $form['gallery_assist_item']['#collapsed'] = TRUE;
+        $form['gallery_assist_item']['#suffix'] = '<div class="warning">'. t('If to many items you can use the <strong>Edit one item</strong> link displayed by the item view.') .'</div>';
+      }
+  
+      // Wrapper for fieldset contents (used by ahah.js).
+      $form['gallery_assist_item']['wrapper'] = array(
+        '#prefix' => '<div id="gallery-assist-list-wrapper">',
+        '#suffix' => '</div>',
+      );
+  
+      // It sends the current user as a reference, if administrators make
+      // changes in the author information of the node.
+      $form['gallery_assist_item']['current_owner'] = array(
+        '#type' => 'value',
+        '#value' => $node->uid,
+      );
+  
+      $form['gallery_assist_item']['wrapper'] += _gallery_assist_form($node);
+      $form['#attributes']['enctype'] = 'multipart/form-data';
+      $form['#submit'][] = 'gallery_assist_form_submit';
+    }
   }
+  unset($this);
+
 }
+
+function gallery_assist_avanced_help_builder ($in = array()) {
+  
+  if (empty($in)) { return ''; }
+  
+  $help_link = theme('advanced_help_topic', $in['module'], $in['help_link']);
+  $output  = $help_link ? '&nbsp;'. $help_link : '';
+  $output .=  $in['text'];
+
+  return $output;
 }
 
 /**
@@ -661,19 +766,19 @@ function _gallery_assist_form(&$node) {
       $direction = $img['width'] <= $img['height'] ? 'height' : 'width';
 
       if (module_exists('imagecache') && $node->gallconf[$node->type]['use_imagecache'] == 1) {
-        $item->image = theme('imagecache', $node->gallconf[$node->type]['thm_presetname'], $item->opath, $item->palt, $item->ptitle, array('style' => 'height:80px; width:80px;'));
+        $item->image = theme('imagecache', $node->gallconf[$node->type]['thm_presetname'], $item->opath, $item->palt, $item->ptitle, array('style' => $direction .':100%;'), FALSE);
       }
       else {
-        $item->image = theme('image', $item->thmb_path, $item->palt, $item->ptitle, array($direction => '80px'), FALSE);
+        $item->image = theme('image', $item->thmb_path, $item->palt, $item->ptitle, array('style' => $direction . '100%'), FALSE);
       }
 
-      $item->image_link = l($item->image, 'node/'. $node->vid .'/'. $item->pid, array('html' => TRUE));
+      $item->image_link = '<div class="thmb_form_image">'. l($item->image, 'node/'. $node->nid .'/'. $item->pid, array('html' => TRUE)) .'</div>';
       // Item form.
       $form['gallery_items'][$key]['remove']  = array('#type' => 'checkbox', '#default_value' => !empty($item->remove));
       $form['gallery_items'][$key]['item']    = array('#value' => $item->image_link);
-      $form['gallery_items'][$key]['ptitle']  = array('#type' => 'textfield', '#title' => t('Title'), '#value' => check_plain($item->ptitle), '#prefix' => '<a name="'. $item->pid .'"></a>', '#suffix' => '<div id="my-edit-gallery-items-'. $item->pid .'-ptitle" style="display:none;" class="warning"><span class="warning">*</span> Changes made in this table will be saved by click Update.</div>'); //
-      $form['gallery_items'][$key]['copyright']  = array('#type' => 'textfield', '#title' => t('Copyright'), '#size' => '50%', '#value' => check_plain($item->copyright), '#suffix' => '<div id="my-edit-gallery-items-'. $item->pid .'-copyright" style="display:none;" class="warning"><span class="warning">*</span> Changes made in this table will be saved by click Update.</div>'); //
-      $form['gallery_items'][$key]['pdescription']  = array('#type' => 'textarea', '#rows' => 2, '#title' => t('Caption'), '#value' => check_markup($item->pdescription, $item->format), '#suffix' => '<div id="my-edit-gallery-items-'. $item->pid .'-pdescription" style="display:none;" class="warning"><span class="warning">*</span> Changes made in this table will be saved by click Update.</div><div id="jump-to-update-link" class="jump-to-update-link">'. l('Jump to update-bottom to save the changes', 'node/'. $item->nid .'/edit', array('fragment' => 'update-buttom')) .'</div>'); //
+      $form['gallery_items'][$key]['ptitle']  = array('#type' => 'textfield', '#title' => t('Title'), '#value' => $item->ptitle, '#prefix' => '<a name="'. $item->pid .'"></a>', '#suffix' => '<div id="my-edit-gallery-items-'. $item->pid .'-ptitle" style="display:none;" class="warning"><span class="warning">*</span> Changes made in this table will be saved by click Update.</div>'); //
+      $form['gallery_items'][$key]['copyright']  = array('#type' => 'textfield', '#title' => t('Copyright'), '#size' => '50%', '#value' => $item->copyright, '#suffix' => '<div id="my-edit-gallery-items-'. $item->pid .'-copyright" style="display:none;" class="warning"><span class="warning">*</span> Changes made in this table will be saved by click Update.</div>'); //
+      $form['gallery_items'][$key]['pdescription']  = array('#type' => 'textarea', '#rows' => 2, '#title' => t('Caption'), '#value' => $item->pdescription, '#suffix' => '<div id="my-edit-gallery-items-'. $item->pid .'-pdescription" style="display:none;" class="warning"><span class="warning">*</span> Changes made in this table will be saved by click Update.</div><div id="jump-to-update-link" class="jump-to-update-link">'. l('Jump to update-bottom to save the changes', 'node/'. $item->nid .'/edit', array('fragment' => 'update-buttom')) .'</div>'); //
       $form['gallery_items'][$key]['weight']  = array('#type' => 'weight', '#delta' => count($node->gallitems), '#default_value' => $item->weight);
       $form['gallery_items'][$key]['pid']     = array('#type' => 'value',  '#value' => $item->pid);
       $form['gallery_items'][$key]['gid']     = array('#type' => 'hidden',  '#value' => $item->gid);
@@ -693,11 +798,18 @@ function _gallery_assist_form(&$node) {
       '#description' => 'Permitted formats: jpg-, jpeg-, png-, gif-images.',
     );
   }
+
+  $help = array(
+    'module' => 'gallery_assist',
+    'help_link' => 'add-and-edit-gallery-items',
+    'text' => t('Enter here the copyright in case all pictures you will just upload and all should having the same copyright.'),
+  );
   $form['new']['temp_copyright']  = array(
     '#type' => 'textfield', 
     '#title' => t('Temp copyright'), 
     '#size' => 20,
     '#default_value' => $node->temp_copyright, 
+    '#description' => gallery_assist_avanced_help_builder ($help),
   ); 
 
   $form['new']['picsubmit'] = array(
@@ -742,7 +854,9 @@ function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
       }
       break;
 
-    case 'view':
+    case 'view': 
+
+      $node = node_prepare($node, $teaser);
       $display_extra = variable_get('gallery_assist_lightbox', 'none') == 'none' ? 'none' : 'lightbox';
 
       if (user_access('view gallery_assist content') || user_access('view gallery_assist_'. $node->type .' content')) {
@@ -757,6 +871,7 @@ function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
         }
 
         if ($page) {
+
           if (empty($_GET['titles'])) {
             $_GET['titles'] = $node->show_title == 1 ? 'on' : 'off';
           }
@@ -785,7 +900,6 @@ function gallery_assist_nodeapi(&$node, $op, $teaser, $page) {
               '#weight' => $position,
             );
           }
-
           $node->content['my_gallery_field'] = array(
             '#value' => gallery_assist_include_display($node, 'page', $user, $display_extra),
             '#weight' => $node->gallery_assist_weight,
@@ -922,7 +1036,8 @@ function gallery_assist_upload_js() {
   );
 
   // Render the form for output.
-  drupal_alter('form', $form, array(), 'gallery_assist_upload_js');
+  $form_id = 'gallery_assist_upload_js';
+  drupal_alter($form, $form_state, $form_id);
   $form_state = array('submitted' => FALSE);
   $form = form_builder('gallery_assist_upload_js', $form, $form_state);
   $output = theme('status_messages') . drupal_render($form);
@@ -937,7 +1052,7 @@ function gallery_assist_upload_js() {
 
 /**
  * Display gallery assist container.
- */
+ 
 function gallery_assist_include_display(&$node, $opt='', $owner='', $display_extra = 'none') {
   switch ($display_extra) {
     case 'none':
@@ -948,6 +1063,51 @@ function gallery_assist_include_display(&$node, $opt='', $owner='', $display_ext
     case 'lightbox':
       module_load_include('inc', 'gallery_assist_lightboxes', 'gallery_assist_lightboxes_display');
       return gallery_assist_display($node, $opt, $owner);
+      break;
+  }
+}*/
+
+/**
+ * Display gallery assist container. 
+ */
+function gallery_assist_include_display(&$node, $opt='', $owner='', $display_extra = 'none') {
+
+  if (empty($node->gallconf[$node->type]['show_layout'])) {
+    $node->gallconf[$node->type]['show_layout'] = 'grid';
+  }
+
+  switch ($display_extra) {
+    case 'none':
+
+      switch ($node->gallconf[$node->type]['show_layout']) {
+        case 'grid':
+          module_load_include('inc', 'gallery_assist', 'gallery_assist_display');
+          return gallery_assist_display($node, $opt, $owner);
+          break;
+        case 'list':
+          module_load_include('inc', 'gallery_assist', 'gallery_assist_list_display');
+          return gallery_assist_display_list($node, $opt, $owner);
+          break;
+      }
+      
+      break;
+
+    case 'lightbox':
+
+      switch ($node->gallconf[$node->type]['show_layout']) {
+        case 'grid':
+          module_load_include('inc', 'gallery_assist_lightboxes', 'gallery_assist_lightboxes_display');
+          return gallery_assist_display($node, $opt, $owner);
+          break;
+        case 'list':
+          module_load_include('inc', 'gallery_assist_lightboxes', 'gallery_assist_lightboxes_list_display');
+          return gallery_assist_display_list($node, $opt, $owner);
+          break;
+      }
+
+      // LD
+      //module_load_include('inc', 'gallery_assist_lightboxes', 'gallery_assist_lightboxes_display');
+      //return gallery_assist_display($node, $opt, $owner);
       break;
   }
 }
@@ -1047,14 +1207,18 @@ function gallery_assist_load(&$node) {
 
   $udata = unserialize($additions->data);
   unset($additions->data);
+
+  $additions->show_in_homepage_block = $udata['show_in_homepage_block'];
+  $ga_c[$node->type]['show_layout'] = $udata['show_layout'] ? $udata['show_layout'] : $nt_conf['show_layout'];
   $ga_c[$node->type]['layout'] = array(
     'ga_align' => $udata['ga_align'] ? $udata['ga_align'] : $nt_conf['ga_align'],
     'gap_align' => $udata['gap_align'] ? $udata['gap_align'] : $nt_conf['gap_align'],
-    'ga_float' => $udata['ga_float'] ? $udata['ga_float'] : $nt_conf['ga_float'],
+    't_ga_float' => $udata['t_ga_float'] ? $udata['t_ga_float'] : $nt_conf['t_ga_float'],
+    'p_ga_float' => $udata['p_ga_float'] ? $udata['p_ga_float'] : $nt_conf['p_ga_float'],
   );
 
   // Get gallery items data.
-  $query = "SELECT a.pid, a.nid, a.ref, a.gid, a.gref, a.sid, a.uid, a.fid, a.filename, a.opath, a.ppath, a.tpath, a.copyright, a.weight, tp.lang, tp.ptitle, tp.palt, tp.pdescription, tp.format, tp.did FROM {gallery_assist_item} a JOIN {gallery_assist_translated} tp ON a.pid = tp.pid WHERE a.gref=%d AND tp.lang = '%s' ORDER BY a.weight";
+  $query = "SELECT a.pid, a.nid, a.ref, a.gid, a.gref, a.sid, a.uid, a.fid, a.filename, a.opath, a.ppath, a.tpath, a.copyright, a.weight, tp.lang, tp.ptitle, tp.palt, tp.pdescription, tp.format, tp.did FROM {gallery_assist_item} a JOIN {gallery_assist_translated} tp ON a.pid = tp.pid WHERE a.gref=%d AND tp.lang = '%s' ORDER BY a.weight ASC";
   $result = db_query($query, $additions->gref, $node->language);
 
   while ($item = db_fetch_object($result)) {
@@ -1103,6 +1267,16 @@ function gallery_assist_insert(&$node) {
   // Compare and set settings from default.
   $data = variable_get('gallery_assist_'. $node->type .'_data',  FALSE);
   $node->show_title = $data['show_title'];
+  $settings = array(
+    'ga_align' => $data['layout']['ga_align'],
+    'gap_align' => $data['layout']['gap_align'],
+    't_ga_float' => $data['layout']['t_ga_float'],
+    'p_ga_float' => $data['layout']['p_ga_float'],
+    'show_layout' => $data['show_layout'],
+    'show_in_homepage_block' => $data['show_in_homepage_block'],
+  );
+  $new_data = serialize($settings);
+
 
   if (!empty($node->translation_source->nid) || !empty($node->tnid)) {
     // Get ref by tranlation and check and upgrate the translation table
@@ -1165,15 +1339,16 @@ function gallery_assist_insert(&$node) {
   // 
   $insert_gallery_data = array(
     'ref' => $my['ref'],
-    'gref' => $my['gref'],
+    'gref' => isset($my['gref']) ? $my['gref'] : (int)0,
     'lang' => $my['lang'],
     'nid' => $node->nid,
     'uid' => $node->uid,
     'ganame' => $my['ganame'],
-    'in_profile' => $node->in_profile,
-    'comments' => $node->comments,
-    'show_title' => $node->show_title,
-    'shadow' => $node->shadow,
+    'in_profile' => isset($node->in_profile) ? $node->in_profile : (int)0,
+    'comments' => isset($node->comments) ? $node->comments : (int)0,
+    'show_title' => isset($node->show_title) ? $node->show_title : (int)0,
+    'shadow' => isset($node->shadow) ? $node->shadow : (int)0,
+    'data' => $new_data,
   );
   drupal_write_record('gallery_assist', $insert_gallery_data);
   // Old.
@@ -1232,9 +1407,12 @@ function gallery_assist_update($node) {
   // Update data.
   $d_settings = variable_get('gallery_assist_'. $node->type .'_data', FALSE);
   $settings = array(
-    'ga_align' => $node->ga_align ? $node->ga_align : $d_settings['ga_align'],
-    'gap_align' => $node->gap_align ? $node->gap_align : $d_settings['gap_align'],
-    'ga_float' => $node->ga_float ? $node->ga_float : $d_settings['ga_float'],
+    'ga_align' => $node->ga_align ? $node->ga_align : $d_settings['layout']['ga_align'],
+    'gap_align' => $node->gap_align ? $node->gap_align : $d_settings['layout']['gap_align'],
+    't_ga_float' => $node->t_ga_float ? $node->t_ga_float : $d_settings['layout']['t_ga_float'],
+    'p_ga_float' => $node->p_ga_float ? $node->p_ga_float : $d_settings['layout']['p_ga_float'],
+    'show_layout' => $node->show_layout ? $node->show_layout : $d_settings['show_layout'],
+    'show_in_homepage_block' => $node->show_in_homepage_block ? $node->show_in_homepage_block : $d_settings['show_in_homepage_block'],
   );
   $new_data = serialize($settings);
 
@@ -1362,7 +1540,19 @@ function gallery_assist_form_submit(&$form, &$form_state) {
     $node->gallery_items = $form_state['clicked_button']['#post']['gallery_items'];
   }
 
-  gallery_assist_save($node, $user);
+  if (empty($node->gid)) {
+
+    gallery_assist_insert($node);
+
+    drupal_set_message(t('The gallery places had to be recreated. Possible causes: The gallery feature was assigned to this content type after the creation of this article or the gallery-assist module has been reinstalled. In order to be able to upload pictures you have to reload this page. <a href="@myLink">RELOAD HERE</a>', array('@myLink' => url('node/'. $node->nid .'/edit'))));
+
+  }
+  else {
+
+    gallery_assist_save($node, $user);
+
+  }
+
 }
 
 /**
@@ -1397,17 +1587,17 @@ function gallery_assist_save(&$node) {
       // Update items data.
       $update_item_data = array(
         'pid' => $pid,
-        'copyright' => check_plain($item->copyright),
+        'copyright' => $item->copyright,
         'weight' => $item->weight,
       );
       drupal_write_record('gallery_assist_item', $update_item_data, 'pid');
-      //db_query("UPDATE {gallery_assist_item} SET copyright = '%s', weight = %d WHERE pid = %d", $item->copyright, $item->weight, $pid);
-      
+      // db_query("UPDATE {gallery_assist_item} SET copyright = '%s', weight = %d WHERE pid = %d", $item->copyright, $item->weight, $pid);
+
       // Update translated data.
       $update_translated_data = array(
         'pid' => $pid,
         'lang' => $node->language,
-        'ptitle' => check_plain($item->ptitle),
+        'ptitle' => $item->ptitle,
         'pdescription' => $item->pdescription,
       );
       drupal_write_record('gallery_assist_translated', $update_translated_data, array('pid', 'lang'));
@@ -1416,6 +1606,8 @@ function gallery_assist_save(&$node) {
   }
 
   if (count($node->newfile['name']) > 0) {
+
+    $ucn = db_result(db_query("SELECT weight FROM {gallery_assist_item} WHERE gid = %d ORDER BY weight DESC LIMIT 0 , 1", $node->gid));
 
     for ($i = 0; $i < count($node->newfile['name']); ++$i) {
 
@@ -1430,174 +1622,141 @@ function gallery_assist_save(&$node) {
         $f_ext_string  = substr(strrchr($node->newfile['name']['pictures'. $i], '.'), 0);
         $f_name_string = preg_replace( '/\.[a-z0-9]+$/i' , '' , $node->newfile['name']['pictures'. $i]);
         $my_ptitle = $f_name_string;
-        // clear the ends and remove x characters.
-        //$f_name_string = preg_replace("/(^[^a-z0-9]*|[^a-z0-9]+$)/", "", $f_name_string);
 
-        //$f_name_string = preg_replace("/[^a-z0-9-\s]/i", "", $f_name_string);
+        if (file_create_path($upload_dir, 1)) {
+          $validators = array('file_validate_is_image' => array());
 
+          if (is_dir($upload_dir) && $node->newfile['name']['pictures'. $i]) {
 
-        if (variable_get('gallery_assist_upload_name_filter', 1) == 1) {
-          $file = preg_replace( '/[^a-zA-Z0-9]/' , '', $f_name_string) . $f_ext_string;
-        }
-        elseif (variable_get('gallery_assist_upload_name_filter', 1) == 2) {
-          $file = preg_replace("/\s+/", "_", $f_name_string) . $f_ext_string;
-        }
-        else {
-          //$file = urlencode($node->newfile['name']['pictures'. $i]);
-          //$file = preg_replace("/[^a-zA-Z0-9-_\.\s]/", '', $node->newfile['name']['pictures'. $i]);
-          $file = $node->newfile['name']['pictures'. $i];
-        }
+            $replace = variable_get('gallery_assist_upload_method', 1) == 1 ? TRUE : FALSE;
+            
+            // In case the file exists remove al derivatives.
+            // So can the module write the new files.
+            if ($replace == 1 && file_exists($upload_dir .'/'. $node->newfile['name']['pictures'. $i])) {
+              drupal_set_message('Files are be replaced. In case you see the old files, you see only from the cache of your browser. By reload you can see the just uploaded.');
+              if (file_exists($upload_dir .'/'. $node->newfile['name']['pictures'. $i])) {
+                file_delete($upload_dir .'/'. $node->newfile['name']['pictures'. $i]);
+                $p_i_d  = db_fetch_object(db_query("SELECT fid, pid FROM {gallery_assist_item} WHERE opath = '%s'", $upload_dir .'/'. $node->newfile['name']['pictures'. $i]));
+                if (!empty($p_i_d)) {
+                  db_query('DELETE FROM {files} WHERE fid = %d', $p_i_d->fid);
+                  db_query('DELETE FROM {gallery_assist_translated} WHERE pid = %d', $p_i_d->pid);
+                  db_query('DELETE FROM {gallery_assist_item} WHERE pid = %d', $p_i_d->pid);
+                }
+              }
+              if (file_exists($upload_dir .'/img/'. $node->newfile['name']['pictures'. $i])) {
+                file_delete($upload_dir .'/img/'. $node->newfile['name']['pictures'. $i]);
+              }
+              if (file_exists($upload_dir .'/thm/'. $node->newfile['name']['pictures'. $i])) {
+                file_delete($upload_dir .'/thm/'. $node->newfile['name']['pictures'. $i]);
+              }
+              if (file_exists($upload_dir .'/prev/'. $node->newfile['name']['pictures'. $i])) {
+                file_delete($upload_dir .'/prev/'. $node->newfile['name']['pictures'. $i]);
+              }
+            }
 
-        /*
-        if (variable_get('gallery_assist_upload_name_filter', 1) == 1) {
-          $file = preg_replace("/[^a-zA-Z0-9.]/", '', $node->newfile['name']['pictures'. $i]);
-        }
-        else {
-          $file = $node->newfile['name']['pictures'. $i];
-        }
-        */
-        
-        // Build the whole new file path.
-        $new_filepath = $upload_dir .'/'. $file;
-        
-        $imageinfo = image_get_info($new_filepath);
-        $my_dim_ref = $imageinfo['width'] > $imageinfo['height'] ? $imageinfo['width'] : $imageinfo['height'];
+            if ($upl_file = file_save_upload('pictures'. $i, $validators, $upload_dir, $replace)) {
 
-        // Build the title without file extention.
-        //$my_title_keys = explode('.', $node->newfile['name']['pictures'. $i]);
-        //$my_extension = $my_title_keys[count($my_title_keys) - 1];
-        //$my_title_search = '.'. $my_extension;
-        //$my_title = preg_replace('"'. $my_title_search .'"', '', $node->newfile['name']['pictures'. $i]);
+              $a = explode('/', $upl_file->filepath);
+              $new_filename = end($a);
+              $gallery_assist_thumbnail = $upload_dir .'/img/'. $new_filename;
+              $upload_thm = $upload_dir .'/thm/'. $new_filename;
+              $upload_prev = $upload_dir .'/prev/'. $new_filename;
 
-        //Build the path to the miniatures.
-        $upload_thm = $upload_dir .'/thm/'. $file;
-        $gallery_assist_thumbnail = $upload_dir .'/img/'. $file;
+              @chmod($upl_file->filepath, 0664);
+               //
+              $imageinfo = image_get_info($upl_file->filepath);
+              $my_dim_ref = $imageinfo['width'] > $imageinfo['height'] ? $imageinfo['width'] : $imageinfo['height'];
 
-        //Build the path to the previews.
-        $upload_prev = $upload_dir .'/prev/'. $file;
-        $filepath = $upload_dir .'/'. $node->newfile['name']['pictures'. $i];
+              
+              if (80 < $my_dim_ref) {
+                image_scale($upl_file->filepath, $gallery_assist_thumbnail, 80, 80);
+              }
+              else {
+                copy($upl_file->filepath, $gallery_assist_thumbnail);
+              }
+              @chmod($gallery_assist_thumbnail, 0664);
 
-        $count = db_result(db_query("SELECT COUNT(pid) FROM {gallery_assist_item} WHERE gid = %d AND filename = '%s'", $node->gid, $file));
-        if ($count == 0) {
-          if (file_create_path($upload_dir, 1)) {
-            $validators = array('file_validate_is_image' => array());
+              if ($conf['use_imagecache'] == 0) {
+                $thmb_size = $conf['upload_thm'];
+                $prev_size = $conf['upload_prev'] ? $conf['upload_prev'] : 550;
 
-            if (is_dir($upload_dir) && $node->newfile['name']['pictures'. $i]) {
-
-              $replace = variable_get('gallery_assist_upload_method', 1) == 1 ? TRUE : FALSE;
-              if ($upl_file = file_save_upload('pictures'. $i, $validators, $upload_dir, $replace)) {
-                $new_filepath = $upload_dir .'/'. $file;
-                rename($filepath, $new_filepath);
-                @chmod($new_filepath, 0664);
-                //
-                $imageinfo = image_get_info($new_filepath);
-                $my_dim_ref = $imageinfo['width'] > $imageinfo['height'] ? $imageinfo['width'] : $imageinfo['height'];
-
-                if (80 < $my_dim_ref) {
-                  image_scale($new_filepath, $gallery_assist_thumbnail, 80, 80);
+                
+                if ($thmb_size < $my_dim_ref) {
+                  image_scale($upl_file->filepath, $upload_thm, $thmb_size, $thmb_size);
                 }
                 else {
-                  copy($new_filepath, $gallery_assist_thumbnail);
+                  copy($upl_file->filepath, $upload_thm);
                 }
-                @chmod($gallery_assist_thumbnail, 0664);
+                @chmod($upload_thm, 0664);
 
-                if ($conf['use_imagecache'] == 0) {
-                  $thmb_size = $conf['upload_thm'];
-                  $prev_size = $conf['upload_prev'] ? $conf['upload_prev'] : 550;
-
-                  if ($thmb_size < $my_dim_ref) {
-                    image_scale($new_filepath, $upload_thm, $thmb_size, $thmb_size);
-                  }
-                  else {
-                    copy($new_filepath, $upload_thm);
-                  }
-                  @chmod($upload_thm, 0664);
-
-                  if ($prev_size < $my_dim_ref) {
-                    image_scale($new_filepath, $upload_prev, $prev_size, $prev_size);
-                  }
-                  else {
-                    copy($new_filepath, $upload_prev);
-                  }
-                  @chmod($upload_prev, 0664);
-                  // Clear the cached filesize and refresh the image information.
-                  clearstatcache();
+                
+                if ($prev_size < $my_dim_ref) {
+                  image_scale($upl_file->filepath, $upload_prev, $prev_size, $prev_size);
                 }
-
-                // Replace as posible.
-                //$node->ptitle = $node->gall_items['ptitle'] ? $node->gall_items['ptitle'] : $file;
-                //$node->palt = $file;
-
-                //if (variable_get('gallery_assist_upload_name_filter', 1) == 1 || 
-                //    variable_get('gallery_assist_upload_name_filter', 1) == 2) {
-                  $update_name_in_files = array(
-                    'fid' => $upl_file->fid,
-                    'filename' => $file,
-                    'filepath' => $new_filepath,
-                  );
-                  drupal_write_record('files', $update_name_in_files, 'fid');
-                  //dsm("UPDATE {files} set filename = '$file' filepath = '$new_filepath' WHERE fid = ". $upl_file->fid);
-                  //db_query("UPDATE {files} set filename = '%s', filepath = '%s' WHERE fid = %d", $file, $new_filepath, $upl_file->fid);
-                //}
-
-                if (file_directory_path() != 'sites/default/files') {
-                  $update_name_in_files = array(
-                    'status' => 1,
-                    'fid' => $upl_file->fid,
-                  );
+                else {
+                  copy($upl_file->filepath, $upload_prev);
                 }
-                drupal_write_record('files', $update_name_in_files, 'fid');
-                $result =  db_fetch_object(db_query("SELECT gid, gref FROM {gallery_assist} WHERE nid=%d", $node->nid));
+                @chmod($upload_prev, 0664);
+                // Clear the cached filesize and refresh the image information.
+                clearstatcache();
+              }
 
-                $my_gref = $result->gref ? $result->gref : $result->gid;
-                $my_new_weight = '1000';
+              //if (file_directory_path() != 'sites/default/files') {
+                file_set_status ($upl_file, 1);
+              //}
+              
+              $result =  db_fetch_object(db_query("SELECT gid, gref FROM {gallery_assist} WHERE nid=%d", $node->nid));
 
-                $inset_item_data = array(
-                  'nid' => $node->nid,
-                  'ref' => $node->ref,
+              $my_gref = $result->gref ? $result->gref : $result->gid;
+
+              ++$ucn;
+              $my_new_weight = $ucn;
+
+              $insert_item_data = array(
+                'nid' => $node->nid,
+                'ref' => $node->ref,
+                'gid' => $result->gid,
+                'gref' => $my_gref,
+                'sid' => $node->sid,
+                'uid' => $node->uid,
+                'fid' => $upl_file->fid,
+                'filename' => $new_filename,
+                'tpath' => $upload_thm,
+                'ppath' => $upload_prev,
+                'opath' => $upl_file->filepath,
+                //'weight' => $my_new_weight,
+                'copyright' => $node->temp_copyright,
+              );
+              drupal_write_record('gallery_assist_item', $insert_item_data);
+
+              /*db_query("INSERT INTO {gallery_assist_item} (nid, ref, gid, gref, sid, uid, fid, filename, tpath, ppath, opath, weight, copyright) 
+                VALUES (%d, %d, %d, %d, %d, %d, %d, '%s', '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->ref, $result->gid, $my_gref, $node->sid, $node->uid, 
+                $upl_file->fid, $file, $upload_thm, $upload_prev, $new_filepath, $my_new_weight, $node->copyright);*/
+
+              // Get the pid from recent updated file.
+              $my_last_incerted = db_last_insert_id('gallery_assist_item', 'pid');
+
+              // See how many language entries, and make the picture-entry for each language.
+              $just_translated = db_query("SELECT nid, lang FROM {gallery_assist} WHERE ref=%d", $node->ref);
+              
+              while ($r = db_fetch_object($just_translated)) { 
+                $my_ptitle = preg_replace('/\_/', ' ', $my_ptitle);
+                $inset_translated_data = array(
+                  'nid' => $r->nid,
                   'gid' => $result->gid,
                   'gref' => $my_gref,
-                  'sid' => $node->sid,
-                  'uid' => $node->uid,
-                  'fid' => $upl_file->fid,
-                  'filename' => $file,
-                  'tpath' => $upload_thm,
-                  'ppath' => $upload_prev,
-                  'opath' => $new_filepath,
-                  'weight' => $my_new_weight,
-                  'copyright' => check_plain($node->temp_copyright),
+                  'pid' => $my_last_incerted,
+                  'lang' => $r->lang,
+                  'ptitle' => $my_ptitle, 
+                  'palt' => $my_ptitle, 
+                  'pdescription' => $node->pdescription,
                 );
-                drupal_write_record('gallery_assist_item', $inset_item_data);
-
-                /*db_query("INSERT INTO {gallery_assist_item} (nid, ref, gid, gref, sid, uid, fid, filename, tpath, ppath, opath, weight, copyright) 
-                  VALUES (%d, %d, %d, %d, %d, %d, %d, '%s', '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->ref, $result->gid, $my_gref, $node->sid, $node->uid, 
-                  $upl_file->fid, $file, $upload_thm, $upload_prev, $new_filepath, $my_new_weight, $node->copyright);*/
-
-                // Get the pid from recent updated file.
-                $my_last_incerted = db_last_insert_id('gallery_assist_item', 'pid');
-
-                // See how many language entries, and make the picture-entry for each language.
-                $just_translated = db_query("SELECT nid, lang FROM {gallery_assist} WHERE ref=%d", $node->ref);
-                
-                while ($r = db_fetch_object($just_translated)) { 
-                  $my_ptitle = preg_replace('/\_/', ' ', $my_ptitle);
-                  $inset_translated_data = array(
-                    'nid' => $r->nid,
-                    'gid' => $result->gid,
-                    'gref' => $my_gref,
-                    'pid' => $my_last_incerted,
-                    'lang' => $r->lang,
-                    'ptitle' => check_plain($my_ptitle), 
-                    'palt' => check_plain($my_ptitle), 
-                    'pdescription' => $node->pdescription,
-                  );
-                  drupal_write_record('gallery_assist_translated', $inset_translated_data);
-                  /*
-                  db_query("INSERT INTO {gallery_assist_translated} (nid, gid, gref, pid, lang, ptitle, palt, pdescription) 
-                  VALUES (%d, %d, %d, %d, '%s', '%s', '%s', '%s')", $r->nid, $result->gid, $my_gref, $my_last_incerted, $r->lang, $my_title, 
-                  $file, $node->pdescription);
-                  */
-                }
+                drupal_write_record('gallery_assist_translated', $inset_translated_data);
+                /*
+                db_query("INSERT INTO {gallery_assist_translated} (nid, gid, gref, pid, lang, ptitle, palt, pdescription) 
+                VALUES (%d, %d, %d, %d, '%s', '%s', '%s', '%s')", $r->nid, $result->gid, $my_gref, $my_last_incerted, $r->lang, $my_title, 
+                $file, $node->pdescription);
+                */
               }
             }
           }
@@ -1733,25 +1892,47 @@ function gallery_assist_display_item(&$node, &$pid) {
     $node->dateformate  = t('D, m/d/Y - h:i');
     $item->nid          = $node->nid;
     $item->nodetype     = $node->type;
-    $item->title        = check_plain($node->title);
+    $item->title        = $node->title;
     $item->submitted    = theme('gallery_assist_item_submitted', $node);
     $conf               = $node->gallconf[$node->type];
+
+    $item->preview_size = $node->gallconf[$node->type]['preview_size'];
+
+    // We use the if to avoid division by zero if the image path is wrong
+    if ($img = image_get_info($node->gallitems[$pid]->ppath)) {
+      $ratio = $img['width'] / $img['height'];
+
+      //CASE LIMIT ON WIDTH
+      $scaled_width = round($ratio * $item->preview_size);
+      $preview = $scaled_width < $img['width'] ? $scaled_width : $img['width'];
+      $direction = 'width: 100%; max-width: ' . $preview . 'px;';
+
+      /*
+      //CASE LIMIT ON HEIGHT
+      $scaled_height = round(1/$ratio * $item->preview_size);
+      $preview = $scaled_height < $img['height'] ? $scaled_height : $img['height'];
+      $direction = 'height: 100%; max-height: ' . $preview . 'px;';
+      */
+    }
+    else $direction = '';
 
     if (module_exists('imagecache') && variable_get('gallery_assist_use_imagecache', 0) == 1) {
       //me.
       //$item->img = theme('imagecache', $node->gallconf[$node->type]['prev_presetname'], $node->gallitems[$pid]->opath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle);
       // Anselmo.
-      $item->img = theme('imagecache', $node->gallconf[$node->type]['prev_presetname'], $node->gallitems[$pid]->opath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => 'width: 100%;'), FALSE);
+      $item->img = theme('imagecache', $node->gallconf[$node->type]['prev_presetname'], $node->gallitems[$pid]->opath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => $direction), FALSE);
     }
     else {
       $item->img = theme('image', $node->gallitems[$pid]->ppath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle);
       // me.
       //$item->img = theme('image', $node->gallitems[$pid]->ppath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle);
       // Anselmo.
-      $item->img = theme('image', $node->gallitems[$pid]->ppath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => 'width: 100%;'), FALSE);
+      $item->img = theme('image', $node->gallitems[$pid]->ppath, $node->gallitems[$pid]->palt, $node->gallitems[$pid]->ptitle, array('style' => $direction), FALSE);
       $prev = image_get_info($node->gallitems[$pid]->ppath);
     }
 
+    $item->ppath            = $node->gallitems[$pid]->ppath;
+    
     $item->ptitle           = drupal_set_title(check_plain($node->gallitems[$pid]->ptitle));
     $item->pdescription     = check_markup($node->gallitems[$pid]->pdescription, $node->gallitems[$pid]->format);
     $build_copyright_string = _filter_html(_filter_url($node->gallitems[$pid]->copyright, 1), 1);
@@ -1775,6 +1956,7 @@ function gallery_assist_display_item(&$node, &$pid) {
     $link = l('edit', 'node/ga_edit_one'. $link_helper .'/'. $item->nid .'/'. $pid);
     $adm_link = '<div id="image-box-links"> [ '. $link .' ] </div>'."\n";
     $item->adm_link = $user->uid == $node->gallitems[$pid]->uid ? $adm_link : '';
+    $item->download_path = $node->gallitems[$pid]->opath;
 
     if ($conf['show_backlink'] == 1) {
       $item->link[] = l('« '. t('Back to the gallery'), 'node/'. $node->nid);
@@ -1790,9 +1972,28 @@ function gallery_assist_display_item(&$node, &$pid) {
 
     }
 
-    $item->preview_size = $node->gallconf[$node->type]['preview_size'];
-
     $item->links = !empty($item->link) ? implode('&nbsp;&nbsp;-&nbsp;&nbsp;', $item->link) : '';
+    
+    if ($node->gallconf[$node->type]['layout']['gap_align'] !== 'node') {
+      $item->extra_styles = array();
+      
+      switch ($conf['layout']['gap_align']) {
+        case 'left' :
+          $item->extra_styles = 'margin-right:auto;';
+          $item->img_extra_styles = 'text-align:left;';
+          break;
+  
+        case 'center' :
+          $item->extra_styles = 'margin-left:auto;margin-right:auto;';
+          $item->img_extra_styles = 'text-align:center;';
+          break;
+  
+        case 'right' :
+          $item->extra_styles = 'margin-left:auto;';
+          $item->img_extra_styles = 'text-align:right;';
+          break;
+      }
+    }
 
     drupal_add_css(drupal_get_path('module', 'gallery_assist') .'/css/gallery_assist.css', 'theme', 'all', FALSE);
     $output  = theme('gallery_assist_item', $item);
@@ -1808,23 +2009,23 @@ function theme_gallery_assist_item($item = array()) {
   $output .= ' <div class="clear-block">';
   $output .= '   <div id="node-'. $item->nid .'" class="node">';
   $output .= '     <span class="submitted">'. $item->submitted .'</span>';
+  $output .= '<div class="clear-block">'. $item->links .'</div>';
   $output .= '     <div class="content clear-block">';
-  $output .= $item->links;
   if ($item->top == 1 || $item->top == 3) $output .= '       <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block">'. $item->pager .'</div>';
   // me.
   //$output .= '       <div id="ga-image-display" class="'. $item->nodetype .' ga-image-display" style="width:'. $item->preview_size .'px;">';
   // Anselmo.
-  $output .= '       <div id="ga-image-display" class="'. $item->nodetype .' ga-image-display" style="max-width:'. $item->preview_size .'px;">';
+  $output .= '       <div id="ga-image-display" class="'. $item->nodetype .' ga-image-display" style="max-width:'. $item->preview_size .'px; max-height:'. $item->preview_size .'px;'. $item->extra_styles . $item->img_extra_styles .'">';
   $output .= $_GET['links'] == 'on' ? $item->adm_link : '';
   $output .= $item->img;
   $output .= '</div>';
   if ($item->top == 0 || $item->top == 3) $output .= '       <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block">'. $item->pager .'</div>';
-  $output .= empty($item->copyright) ? '' : '       <div id="gallery-item-copyright" class="'. $item->nodetype .' gallery-item-copyright">&copy; '. $item->copyright .'</div>';
+  $output .= empty($item->copyright) ? '' : '       <div id="gallery-item-copyright" class="'. $item->nodetype .' gallery-item-copyright" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">&copy; '. $item->copyright .'</div>';
   // me.
   //$output .= '       <div id="gallery-item-caption-title" class="'. $item->nodetype .' gallery-item-caption-title" style="width:'. $item->preview_size .'px;">'. $item->ptitle .'</div>';
   // Anselmo.
-  $output .= '       <div id="gallery-item-caption-title" class="'. $item->nodetype .' gallery-item-caption-title" style="max-width:'. $item->preview_size .'px;">'. $item->ptitle .'</div>';
-  $output .= '       <div id="gallery-item-caption-text" class="'. $item->nodetype .' gallery-item-caption-text" style="width:'. $item->preview_size .'px;">'. $item->pdescription .'</div>';
+  $output .= '       <div id="gallery-item-caption-title" class="'. $item->nodetype .' gallery-item-caption-title" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">'. $item->ptitle .'</div>';
+  $output .= '       <div id="gallery-item-caption-text" class="'. $item->nodetype .' gallery-item-caption-text" style="max-width:'. $item->preview_size .'px;'. $item->extra_styles .'">'. $item->pdescription .'</div>';
   $output .= '     </div>';
   $output .= '   </div>';
   $output .= ' </div>';
@@ -1857,7 +2058,26 @@ function gallery_assist_item_pager(&$node, $extras = NULL) {
   $my_odd = $my_quantity & 1;
   $my_n = $my_odd == 1 ? 0 : 1;
   $my_middle = ceil($my_quantity / 2);
-  $my_attributes = array('class' => $node->type .' pager');
+  $my_attributes = array(
+    'class' => $node->type .' pager',
+  );
+
+  if ($conf['layout']['gap_align'] !== 'node') {
+    switch ($conf['layout']['gap_align']) {
+      case 'left' :
+        $my_attributes['style'] = 'text-align:left;';
+        break;
+
+      case 'center' :
+        $my_attributes['style'] = 'text-align:center;';
+        break;
+
+      case 'right' :
+        $my_attributes['style'] = 'text-align:right;';
+        break;
+    }
+  }
+
   $my_active_opts = array('attributes' => array('class' => $node->type .' active'), 'html' => TRUE);
 
   $theme = variable_get('theme_default', FALSE);
@@ -1973,7 +2193,7 @@ function gallery_assist_item_pager(&$node, $extras = NULL) {
  * Theme the output from the gallery pager.
  */
 function theme_gallery_assist_pager($links, $extras = array()) {
-  $output  = '<div id="ga-pager-box" class="pager-'. $extras['pager_position'] .' clear-block next-line">';
+  $output  = '<div id="ga-pager-box" class="pager-'. $extras['pager_position'] .' clear-block next-line" style="'. $extras['pager_style'] .'">';
   $output .= $links;
   $output .= '</div>';
 
@@ -2019,7 +2239,7 @@ function gallery_assist_save_one_js($pid = NULL) {
   else {
     db_query("UPDATE {gallery_assist_item} SET copyright = '%s', weight = %d WHERE pid = %d", $form_state['values']['copyright'], $form_state['values']['weight'], $pid);
     db_query("UPDATE {gallery_assist_translated} SET ptitle = '%s', pdescription = '%s', format = %d WHERE lang = '%s' AND pid = %d",
-    check_plain($form_state['values']['ptitle']), $form_state['values']['pdescription'], $form_state['values']['format'], $form_state['values']['language'], $pid);
+    $form_state['values']['ptitle'], $form_state['values']['pdescription'], $form_state['values']['format'], $form_state['values']['language'], $pid);
   }
 
   print drupal_to_js(array('status' => TRUE, 'data' => t('<span class="messages status">Changes sucessfull saved.</span>')));
@@ -2038,7 +2258,7 @@ function _gallery_assist_edit_one() {
 
   $form = array();
   $breadcrumb = drupal_get_breadcrumb();
-  $breadcrumb[1] = l($node->title .' : '. $node->gallitems[$pid]->ptitle, 'node/'. $node->nid .'/'. $pid);
+  $breadcrumb[1] = l($node->title .' : '. check_plain($node->gallitems[$pid]->ptitle), 'node/'. $node->nid .'/'. $pid);
   drupal_set_breadcrumb($breadcrumb);
 
   drupal_set_title(check_plain($node->title));
@@ -2080,13 +2300,13 @@ function _gallery_assist_edit_one() {
       $form['gallery_assist_edit_one']['ptitle'] = array(
         '#type' => 'textfield',
         '#title' => 'Title',
-        '#default_value' => check_plain($node->gallitems[$pid]->ptitle),
+        '#default_value' => $node->gallitems[$pid]->ptitle,
       );
 
       $form['gallery_assist_edit_one']['copyright'] = array(
         '#type' => 'textfield',
         '#title' => 'Copyright',
-        '#default_value' => check_plain($node->gallitems[$pid]->copyright),
+        '#default_value' => $node->gallitems[$pid]->copyright,
       );
 
       if (module_exists('imagecache') && $node->gallconf[$node->type]['use_imagecache'] == 1) {
@@ -2105,7 +2325,7 @@ function _gallery_assist_edit_one() {
       $form['gallery_assist_edit_one']['pdescription'] = array(
         '#type' => 'textarea',
         '#title' => 'Caption',
-        '#default_value' => check_markup($node->gallitems[$pid]->pdescription, $node->gallitems[$pid]->format),
+        '#default_value' => $node->gallitems[$pid]->pdescription,
         '#rows' => 5,
       );
 
@@ -2120,13 +2340,13 @@ function _gallery_assist_edit_one() {
       $form['gallery_assist_edit_one']['weight'] = array(
         '#type' => 'textfield',
         '#title' => 'Weight',
-        '#default_value' => check_plain($node->gallitems[$pid]->weight),
+        '#default_value' => $node->gallitems[$pid]->weight,
         '#size' => 5,
       );
 
       $form['gallery_assist_edit_one']['language'] = array(
       '#type' => 'hidden',
-      '#value' => check_plain($node->language),
+      '#value' => $node->language,
       );
 
       $form['gallery_assist_edit_one']['nid'] = array(
@@ -2152,98 +2372,14 @@ function _gallery_assist_edit_one() {
   return $form;
 }
 
-/*
- * Implementation of hook_block().
- */
-function gallery_assist_block($op = 'list', $delta = 0, $edit = array()) {
-  $delta = variable_get('gallery_assist_block_type', 0);
-  switch ($op) {
-    case 'list':
-      $block[0] = array(
-        'info'       => t('My Galleries.'),
-        'title'       => t('My Galleries'),
-        'visibility' => 1,
-      );
-      return $block;
-
-    case 'configure':
-      $form['gallery_assist_settings'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Gallery Assist block display type'),
-        '#collapsible' => TRUE,
-        //'#collapsed' => TRUE,
-        '#tree' => FALSE,
-      );
-      $form['gallery_assist_settings']['gallery_assist_block_type'] = array(
-        '#type' => 'radios',
-        '#title' => t('Choose a block display type'),
-        '#options' => array(0 => t('Hiperlinks'), 1 => t('Thumbnails')),
-        '#default_value' => variable_get('gallery_assist_block_type', 0),
-      );
-      return $form;
-
-    case 'save':
-      variable_set('gallery_assist_block_type', $_POST['gallery_assist_block_type']);
-      return;
-
-    case 'view': default:
-      switch ($delta) {
-        case 0:
-          $block['subject'] = t('My Galleries');
-          $block['content'] = gallery_assist_my_block('links');
-          break;
-        case 1:
-          $block['subject'] = t('My Galleries');
-          $block['content'] = gallery_assist_my_block('pics');
-          break;
-      }
-
-      return $block;
-  }
-}
-
-/*
- * Build the gallery block
- * administrator can decide to display lists or covers.
- *
- * This have not good features but will be in the next implemented.
- */
-function gallery_assist_my_block($op) {
-  global $user;
-
-  $query_str = "SELECT n.title,  n.type,  n.created, g.* FROM {node} n JOIN {gallery_assist} g ON n.nid = g.nid WHERE g.uid = %d ORDER BY n.created DESC";
-  $result = db_query(db_rewrite_sql($query_str, 'n', 'nid'), $user->uid);
-
-  while ($r = db_fetch_object($result)) {
-    switch ($op) {
-      case 'links':
-        $link[] = theme('menu_item', l($r->title, 'node/'. $r->nid), 0, '', FALSE);
-        break;
-
-      case 'pics':
-        $img_name = db_result(db_query("SELECT filename FROM {gallery_assist_item} WHERE gid = %d", $r->gid));
-        $img_path = file_directory_path() .'/gallery_assist/'. $r->uid .'/'. $r->ganame .'/img/'. $img_name;
-        $img = theme('image', $img_path, $r->title, t('Gallery') .': '. $r->title, array('width' => '50px', 'height' => '50px'), FALSE);
-        $link[] = l($img, 'node/'. $r->nid, array('html' => TRUE));
-        break;
-
-    }
-  }
-
-  $avice = user_access('create gallery_assist content') ? t('Empty.') : '';
-  $output = empty($link) ? $avice : theme('menu_tree', implode('', $link));
-
-  return isset($output) ? $output : '';
-}
-
 /**
  * Implementation of hook_content_extra_fields().
  *
- * Lets CCK expose the image weight in the node content.
+ * Lets CCK expose the gallery content weight in the node content.
  */
 function gallery_assist_content_extra_fields($type_name) {
   if ($type_name == 'gallery_assist') {
-    $extra['image'] = array(
+    $extra['gallery_assist'] = array(
       'label' => t('Gallery Assist Container'),
       'description' => t('Container with the Gallery Assist items.'),
       'weight' => 0,
@@ -2251,3 +2387,515 @@ function gallery_assist_content_extra_fields($type_name) {
     return $extra;
   }
 }
+
+/**
+ * Currently needed from submodules. 
+ */
+function gallery_assist_prepare_thms($item = array(), $conf = array()) {
+  
+  if (module_exists('imagecache') && $conf['use_imagecache'] == 1) {
+    $my_img = theme('imagecache', $conf['thm_presetname'], $item->opath, $item->palt, $item->ptitle, $item->my_img_attr, FALSE);
+  }
+  else {
+    $my_img = theme('image', $item->tpath, $item->palt, $item->ptitle, $item->my_img_attr, FALSE);
+  }
+
+  return $my_img;
+}
+
+/**
+ * Load the needed css- and js-files form submodule lightboxes.
+ */
+function gallery_assist_get_includes($hilfo = array()) {
+  if (empty($hilfo)) {
+    return;
+  }
+  
+  if (count($hilfo['data']['css'])) {
+    foreach ($hilfo['data']['css'] as $k => $v) {
+      if ($v) {
+        drupal_add_css($k);
+      }
+    }
+  }
+  
+  if (count($hilfo['data']['js'])) {
+    foreach ($hilfo['data']['js'] as $k => $v) {
+      if ($v) {
+        drupal_add_js($k);
+      }
+    }
+  } 
+  
+  if (count($hilfo['data']['selector'])) {
+    foreach ($hilfo['data']['selector'] as $k => $v) {
+      if ($v) {
+        drupal_add_js($k);
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_theme_registry_alter().
+ 
+function gallery_assist_theme_registry_alter(&$theme_registry) {
+  
+}*/
+
+/*
+ * Implementation of hook_block().
+ */
+function gallery_assist_block($op = 'list', $delta = 0, $edit = array()) {
+  
+  switch ($op) {
+    
+    case 'list' :
+      
+      $block[0] = array(
+        'info'       => t('Galleries'),
+        'title'       => t('Galleries'),
+        'visibility' => 1,
+      );
+      $block[1] = array(
+        'info'       => t('My Galleries'),
+        'title'       => t('My Galleries'),
+        'visibility' => 1,
+      );
+      $block[2] = array(
+        'info'       => t('Gallery Block'),
+        'title'       => t('Gallery Block'),
+        'visibility' => 1,
+      );
+      
+      return $block;
+      break;
+
+    case 'configure' :
+      
+      $form = array();
+      $form = _gallery_assist_block_settings_form($delta);
+
+      return $form;
+      break;
+
+    case 'save' :
+      
+      $post_data = $_POST;
+      _gallery_assist_block_settings_form_submit($delta, $post_data);
+      
+      break;
+
+    case 'view': default:
+      switch ($delta) {
+        case 0:
+          $block['subject'] = t('Galleries');
+          $block['content'] = _gallery_assist_block_display(0);
+          break;
+        case 1:
+          $block['subject'] = t('My Galleries');
+          $block['content'] = _gallery_assist_block_display(1);
+          break;
+        case 2:
+          $block['subject'] = t('Gallery Block');
+          $block['content'] = _gallery_assist_block_display(2);
+          break;
+      }
+
+      return $block;
+
+  }
+
+}
+
+/**
+ * Build the GA-Block settings form.
+ */
+function _gallery_assist_block_settings_form($delta) {
+  global $user;
+  $form = array();
+  $data = variable_get('gallery_assist_block_data', FALSE);
+
+  if ($delta == 2) {
+
+      $form['gallery_assist_block_settings']['ga_block_galleries'] = array(
+        '#type' => 'textfield',
+        '#title' => t("Gallery Assist node ID's"),
+        '#default_value' => $data[$delta]['galleries'],
+        '#description' => "NID's separated with white spaces",
+      );
+
+  }
+
+  if ($delta == 0 || $delta == 1) {
+
+      $form['gallery_assist_block_settings']['ga_block_bformat'] = array(
+        '#type' => 'radios',
+        '#title' => t('Gallery Assist block items format'),
+        '#options' => array('lnk' => 'as links', 'pic' => 'as icons'),
+        '#default_value' => $data[$delta]['bformat'],
+      );
+
+  }
+
+  if ($data[$delta]['bformat'] == 'pic' && $delta == 0 || 
+      $data[$delta]['bformat'] == 'pic' && $delta == 1 || 
+      $delta == 2 ) {
+
+      $form['gallery_assist_block_settings']['ga_block_item_size'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Item size'),
+        '#default_value' => $data[$delta]['item_size'],
+        '#description' => 'Block thumbnail size.',
+        '#size' => 8,
+      );
+      $form['gallery_assist_block_settings']['ga_block_item_margin'] = array(
+        '#type' => 'select',
+        '#title' => t('Item margin'),
+        '#options' => drupal_map_assoc(array('none', 1, 2, 3, 4, 5, 6, 7, 8, 9)),
+        '#default_value' => $data[$delta]['item_margin'],
+      );
+      $form['gallery_assist_block_settings']['ga_block_item_padding'] = array(
+        '#type' => 'select',
+        '#title' => t('Item padding'),
+        '#options' => drupal_map_assoc(array('none', 1, 2, 3, 4, 5, 6, 7, 8, 9)),
+        '#default_value' => $data[$delta]['item_padding'],
+      );
+
+      $form['gallery_assist_block_settings']['ga_block_item_border'] = array(
+        '#type' => 'select',
+        '#title' => t('Item border'),
+        '#options' => drupal_map_assoc(array('none', 1, 2, 3, 4, 5, 6, 7, 8, 9)),
+        '#default_value' => $data[$delta]['item_border'],
+      );
+
+      $form['gallery_assist_block_settings']['ga_block_item_border_color'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Item border color #027AC6'),
+        '#default_value' => $data[$delta]['item_border_color'],
+        '#size' => 8,
+      );
+
+      if ($user->id == 1) {
+        $visibles = $data[$delta]['visibles'];
+        $desc = 'Nummber of items visible in the block';
+      }
+      else {
+        $visibles = $data[$delta]['visibles'] <= 12 ? $data[$delta]['visibles'] : 12;
+        $desc = 'Nummber of items visible in the block (1 - 12).';
+      }
+
+      $form['gallery_assist_block_settings']['ga_block_visibles'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Gallery Assist visible nodes'),
+        '#default_value' => $visibles,
+        '#description' => $desc,
+        '#size' => 8,
+      );
+  }
+
+  return $form;
+}
+
+/**
+ * Save the GA-Block settings.
+ */
+function _gallery_assist_block_settings_form_submit($delta, $post_data) {
+  
+  $prefix = 'ga_block_';
+  $data = variable_get('gallery_assist_block_data', FALSE);
+
+  if ($delta == 2) {
+
+    $data[$delta]['galleries'] = $post_data[$prefix .'galleries'] ? $post_data[$prefix .'galleries'] : $data[$delta]['galleries'];
+    $data[$delta]['visibles'] = $post_data[$prefix .'visibles'] ? $post_data[$prefix .'visibles'] : $data[$delta]['visibles'];
+
+  }
+  
+  if ($delta == 0 || $delta == 1) {
+
+      $data[$delta]['bformat'] = $post_data[$prefix .'bformat'] ? $post_data[$prefix .'bformat'] : $data[$delta]['bformat'];
+
+  }
+
+  if ($delta == 0 || $delta == 1 || $delta == 2) {
+
+    $data[$delta]['item_size'] = $post_data[$prefix .'item_size'] ? $post_data[$prefix .'item_size'] : $data[$delta]['item_size'];
+    $data[$delta]['item_margin'] = $post_data[$prefix .'item_margin'] ? $post_data[$prefix .'item_margin'] : $data[$delta]['item_margin'];
+    $data[$delta]['item_padding'] = $post_data[$prefix .'item_padding'] ? $post_data[$prefix .'item_padding'] : $data[$delta]['item_padding'];
+    $data[$delta]['item_border'] = $post_data[$prefix .'item_border'] ? $post_data[$prefix .'item_border'] : $data[$delta]['item_border'];
+    $data[$delta]['item_border_color'] = $post_data[$prefix .'item_border_color'] ? $post_data[$prefix .'item_border_color'] : $data[$delta]['item_border_color'];
+    $data[$delta]['visibles'] = $post_data[$prefix .'visibles'] ? $post_data[$prefix .'visibles'] : $data[$delta]['visibles'];
+
+  }
+
+  variable_set('gallery_assist_block_data', $data);
+}
+
+/**
+ * Display the GA-Blocks.
+ */
+function _gallery_assist_block_display($delta) {
+  global $user;
+  $u = $user->uid == 0 ? 1 : $user->uid;
+  $block_data = variable_get('gallery_assist_block_data', FALSE);
+  $output = '';
+
+  switch ($delta) {
+    
+    case 0 :
+    
+      $query_str = "SELECT n.title,  n.type,  n.created, g.* FROM {node} n JOIN {gallery_assist} g ON n.nid = g.nid WHERE g.uid = %d ORDER BY n.created DESC";
+      $result = db_query(db_rewrite_sql($query_str, 'n', 'nid'), $u);
+    
+      while ($r = db_fetch_object($result)) {
+        $count = db_result(db_query("SELECT count(*) FROM {gallery_assist_item} WHERE gid = %d", $r->gid));
+        $data = unserialize($r->data);
+
+        switch ($block_data[$delta]['bformat']) {
+          case 'lnk':
+            //$link[] = theme('menu_item', l($r->title, 'node/'. $r->nid), 0, '', FALSE);
+            if ($data['show_in_homepage_block'] == 1) {
+              $link = theme('menu_item', l($r->title, 'node/'. $r->nid), 0, '', FALSE);
+              $item[] = gallery_assist_public_block($link, $block_data[$delta]['bformat'], $block_data[$delta]);
+            }
+            break;
+    
+          case 'pic':
+            if ($data['show_in_homepage_block'] == 1) {
+              $img_name = db_result(db_query("SELECT tpath FROM {gallery_assist_item} WHERE gid = %d", $r->gid));
+              
+              if (module_exists('imagecache') && variable_get('gallery_assist_use_ic', 0) == 1) {
+                //preg_replace('/files\/gallery_assist/', 'files/imagecache/'. $ga_c[$node->type]['thm_presetname'] .'/gallery_assist', $img_name);
+                //$img_path = preg_replace('/thm\//', 'img/', $img_name;
+                $img_path = $img_name;
+              }
+              else {
+                $img_path = preg_replace('/thm\//', 'img/', $img_name);
+              }
+              
+              // No image, no block.
+              if (strlen($img_path) < 15) {
+                return;
+              }
+
+              $iinfo = image_get_info($img_path);
+              $block_data[$delta]['thumbnail_size'] = $block_data[$delta]['item_size'];
+              
+              //module_load_include('inc', 'gallery_assist', 'gallery_assist_display');
+              $iinfo = gallery_assist_image_more_info(FALSE, $iinfo, $block_data[$delta]);
+
+              $direction = $iinfo['width'] >= $iinfo['height'] ? 'width' : 'height';
+              if ($iinfo[$direction] < $block_data[$delta]['item_size']) {
+                $block_data[$delta]['item_size'] = $iinfo[$direction];
+              }
+
+              $style = $direction .':'. $iinfo['new_'. $direction] .'px;';
+              
+              $style .= $iinfo['top'] > 1 ? 'margin-top:'. $iinfo['top'] .'px;' : '';
+              
+              $attr = array(
+                $direction => $block_data[$delta]['item_size'], 
+                'style' => $style
+              );
+
+              
+              $img = theme('image', $img_path, $r->title, t('Gallery') .': '. $r->title .' ('. $count .' items)', $attr, FALSE);
+              $link = l($img, 'node/'. $r->nid, array('html' => TRUE));
+              $item[] = gallery_assist_public_block($link, $block_data[$delta]['bformat'], $block_data[$delta]);
+            }
+            
+            break;
+        }
+      }
+
+      $output = empty($item) ? $avice : theme('menu_tree', implode('', $item));
+      return isset($output) ? $output : '';
+      break;
+
+    case 1 :
+    
+      $query_str = "SELECT n.title,  n.type,  n.created, g.* FROM {node} n JOIN {gallery_assist} g ON n.nid = g.nid WHERE g.uid = %d ORDER BY n.created DESC";
+      $result = db_query(db_rewrite_sql($query_str, 'n', 'nid'), $user->uid);
+    
+      while ($r = db_fetch_object($result)) {
+        $count = db_result(db_query("SELECT count(*) FROM {gallery_assist_item} WHERE gid = %d", $r->gid));
+        $data = unserialize($r->data);
+    
+        switch ($block_data[$delta]['bformat']) {
+          case 'lnk':
+            //$link[] = theme('menu_item', l($r->title, 'node/'. $r->nid), 0, '', FALSE);
+            //if ($data['show_in_homepage_block'] == 1) {
+              $link = theme('menu_item', l($r->title, 'node/'. $r->nid), 0, '', FALSE);
+              $item[] = gallery_assist_public_block($link, $block_data[$delta]['bformat'], $block_data[$delta]);
+            //}
+            break;
+    
+          case 'pic':
+
+            $img_name = db_result(db_query("SELECT tpath FROM {gallery_assist_item} WHERE gid = %d", $r->gid));
+              
+              if (module_exists('imagecache') && variable_get('gallery_assist_use_ic', 0) == 1) {
+                //preg_replace('/files\/gallery_assist/', 'files/imagecache/'. $ga_c[$node->type]['thm_presetname'] .'/gallery_assist', $img_name);
+                //$img_path = preg_replace('/thm\//', 'img/', $img_name;
+                $img_path = $img_name;
+              }
+              else {
+                $img_path = preg_replace('/thm\//', 'img/', $img_name);
+              }
+              
+              // No image, no block.
+              if (strlen($img_path) < 15) {
+                return;
+              }
+
+              $iinfo = image_get_info($img_path);
+              $block_data[$delta]['thumbnail_size'] = $block_data[$delta]['item_size'];
+              
+              //module_load_include('inc', 'gallery_assist', 'gallery_assist_display');
+              $iinfo = gallery_assist_image_more_info(FALSE, $iinfo, $block_data[$delta]);
+
+              $direction = $iinfo['width'] >= $iinfo['height'] ? 'width' : 'height';
+              if ($iinfo[$direction] < $block_data[$delta]['item_size']) {
+                $block_data[$delta]['item_size'] = $iinfo[$direction];
+              }
+
+              $style = $direction .':'. $iinfo['new_'. $direction] .'px;';
+              
+              $style .= $iinfo['top'] > 1 ? 'margin-top:'. $iinfo['top'] .'px;' : '';
+              
+              $attr = array(
+                $direction => $block_data[$delta]['item_size'], 
+                'style' => $style
+              );
+
+              
+              $img = theme('image', $img_path, $r->title, t('Gallery') .': '. $r->title .' ('. $count .' items)', $attr, FALSE);
+              $link = l($img, 'node/'. $r->nid, array('html' => TRUE));
+              $item[] = gallery_assist_public_block($link, $block_data[$delta]['bformat'], $block_data[$delta]);
+
+            break;
+        }
+      }
+
+      $output = empty($item) ? $avice : theme('menu_tree', implode('', $item));
+      return isset($output) ? $output : '';
+      break;
+
+    case 2 :
+
+      $in = strlen($block_data[$delta]['galleries']) > 0 ? explode(' ', $block_data[$delta]['galleries']) : '';
+
+      $n = node_load($in[rand(0, count($in) - 1)]);
+
+      $ga_variables = array(
+        'upload_thm' => 150,
+        'upload_prev' => 550,
+        'items_per_row' => 'unlimited',
+        'rows_per_page' => 3,
+        'thumbnail_size' => $block_data[$delta]['item_size'],
+        'thumbnail_size_plus' => 0,
+        'preview_size' => 550,
+        'item_margin' => $block_data[$delta]['item_margin'],
+        'item_padding' => $block_data[$delta]['item_padding'],
+        'item_border' => $block_data[$delta]['item_border'],
+        'item_border_color' => $block_data[$delta]['item_border_color'], //'#027AC6',
+        'show_backlink' => 0,
+        'show_toggle' => 0,
+        'position_toggle' => 0,
+        'title_substr' => 16,
+        'pager_symbol' => 1,
+        'pager_layout' => 'blue15',
+        'pager_position' => 'bottom',
+        'pager_visibles' => 0,
+        'show_title' => 0,
+        // Update 1
+        'layout' => array(
+          'ga_align' => 'center',
+          'gap_align' => 'center',
+          't_ga_float' => 'none',
+          'p_ga_float' => 'none',
+        ),
+        'show_layout' => 'grid',
+        'block_gallery_visibles' => $block_data[$delta]['visibles'],
+      );
+      
+      $n->gallconf[$n->type] = $ga_variables;
+
+      $sumi = (2 * ($ga_variables['item_margin'] + $ga_variables['item_padding'])) + 15;
+      
+      //$n->gallconf[$n->type]['container_width'] = ($ga_variables['thumbnail_size'] * $ga_variables['rows_per_page']) + $sumi;
+
+      $display_extra = variable_get('gallery_assist_lightbox', 'none') == 'none' ? 'none' : 'lightbox';
+
+      $item = gallery_assist_include_display($n, 'page', 'block', $display_extra);
+ 
+      $output = $item;
+      return isset($output) ? $output : '';
+      break;
+
+  }
+
+}
+
+function gallery_assist_public_block($link, $op = 'lnk', $data) {
+
+  $attr = array(
+    'id' => 'ga-common-block',
+    'class' => 'ga-common-block-'. $op,
+  );
+
+  if ($op == 'pic') {
+    $style  = 'float:left;';
+    $style .= $data['item_size'] ? 'width:'. $data['item_size'] .'px;height:'. $data['item_size'] .'px;' : 'width:50px;height:50px;';
+    $style .= $data['item_margin'] ? 'margin:'. $data['item_margin'] .'px;' : '';
+    $style .= $data['item_padding'] ? 'padding:'. $data['item_padding'] .'px;' : '';
+    $style .= $data['item_border'] ? 'border:'. $data['item_border'] .'px solid '. $data['item_border_color'] .';' : '';
+    
+    $attr['style'] = $style;
+  }
+
+  $output = '<div '. drupal_attributes($attr) .'>';
+  $output .= $link;
+  $output .= '</div>';
+  
+  return $output;
+
+}
+
+/**
+ * Theme the item output.
+ */
+function theme_gallery_assist_block_display(&$boxes, $conf, $type = 'gallery_assist', $more = '') {
+
+  $output  = '<div id="blok-gallery-container" class="'. $type .' gallery-container '. $conf['op'] .' clear-block"'. $conf['my_attr'] .'>';
+  $output .= $boxes;
+  $output .= '</div>';
+
+  return  $output;
+}
+
+/**
+ * Build and return the gallery item box. 
+ */
+function gallery_assist_image_more_info($type, $img, $conf) {
+  $symbol = $conf['thumbnail_size'];
+
+  $img['padding'] = $conf['item_padding'];
+  $img['margin']  = $conf['item_margin'];
+  $img['dsize']   = $conf['thumbnail_size'];
+
+  $img['pos'] = $img['height'] >= $img['width'] ? 'v' : 'h';
+
+  if ($img['pos'] == 'h') {
+    $img['new_width'] = $symbol;
+    $img['new_height'] = ((($img['new_width'] * 100) / $img['width']) * $img['height']) / 100;
+    $img['top'] = ($symbol - $img['new_height']) / 2;
+  }
+  else {
+    $img['new_height'] = $symbol;
+  }
+
+  return $img;
+}
+
