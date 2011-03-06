@@ -408,7 +408,7 @@ function gallery_assist_image_box_list($type, $item, $conf, $img) {
   $cover_text = t('[cover]');
   $elink = l($edit_text, 'node/ga_edit_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
   $elink .= l($delete_text, 'node/ga_del_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
-  $elink .= $item->cover == 1 ? '' : l($cover_text, 'ga_item_to_cover/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
+  $elink .= $item->cover == 1 ? '' : $item->cover == 1 ? '' : l($cover_text, 'ga_item_to_cover/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
 
   $node = new stdClass;
   $node->nid = $item->my_nid;

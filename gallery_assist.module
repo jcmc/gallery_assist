@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.module,v 1.1.2.72 2011/01/11 08:46:40 jcmc Exp $
+// $Id: gallery_assist.module,v 1.1.2.74 2011/01/12 10:20:07 jcmc Exp $
 
 /**
  * @file
@@ -921,7 +921,7 @@ function gallery_assist_form_alter(&$form, $form_state, $form_id) {
         }
       }
 
-      $node->check_all_links = t('<span class="ga-check-all description">@check_all</span> | <span class="ga-uncheck-all description">@uncheck_all</span>', array('@check_all' => t('check all'), '@uncheck_all' => t('uncheck all')));
+      $node->check_all_links = count($node->gallitems) > 1 ? t('<span class="ga-check-all description">@check_all</span> | <span class="ga-uncheck-all description">@uncheck_all</span>', array('@check_all' => t('check all'), '@uncheck_all' => t('uncheck all'))) : '';
       // Upload process form section.
       $form['gallery_assist_item'] = array(
         '#type' => 'fieldset',
@@ -1135,7 +1135,7 @@ function _gallery_assist_form(&$node) {
     '#prefix' => '<a name="update-buttom"></a>',
     '#weight' => 24,
   );
-  $form['new']['#prefix'] .= $node->check_all_links;
+  $form['new']['#prefix'] .= count($node->gallitems) > 6 ? $node->check_all_links : '';
   unset($node->check_all_links);
 
   return $form;
@@ -1916,7 +1916,7 @@ function gallery_assist_load(&$node, $revisions = NULL, $reset = FALSE) {
         $additions->ga_public_status = $nt_conf['ga_public_status'];
       }
       if (!$nt_conf['container_format_allowed']) {
-        $udata['container_format'] = $nt_conf['container_format'];
+        $udata['show_layout'] = $nt_conf['show_layout'];
       }
       if (!$nt_conf['gallery_container_weight_allowed']) {
         $udata['gallery_container_weight'] = $nt_conf['gallery_container_weight'];
@@ -2185,7 +2185,8 @@ function gallery_assist_insert(&$node) {
       'ga_db_order_field' => $data['ga_db_order_field'],
       'ga_db_order' => $data['ga_db_order'],
       'ga_item_title_type' => $data['ga_item_title_type'],
-      't_thm_link_format' => $data['t_thm_link_format']
+      't_thm_link_format' => $data['t_thm_link_format'],
+      'ga_public_status' => $data['ga_public_status']
     );
     $new_data = serialize($settings);
 
@@ -2392,37 +2393,37 @@ function gallery_assist_update($node) {
 
   if ($d_settings['common_settings_allowed']) {
     if ($d_settings['gallery_public_status_allowed']) {
-      $settings['ga_public_status'] = $node->ga_public_status ? $node->ga_public_status : 0;
+      $settings['ga_public_status'] = $node->ga_public_status;
     }
     else {
       $settings['ga_public_status'] = $d_settings['ga_public_status'];
     }
     if ($d_settings['container_format_allowed']) {
-      $settings['container_format'] = $node->container_format ? $node->container_format : 0;
+      $settings['show_layout'] = $node->show_layout;
     }
     else {
-      $settings['container_format'] = $d_settings['container_format'];
+      $settings['show_layout'] = $d_settings['show_layout'];
     }
     if ($d_settings['gallery_container_weight_allowed']) {
-      $settings['gallery_container_weight'] = $node->gallery_container_weight ? $node->gallery_container_weight : 0;
+      $settings['gallery_container_weight'] = $node->gallery_container_weight;
     }
     else {
       $settings['gallery_container_weight'] = $d_settings['gallery_container_weight'];
     }
     if ($d_settings['show_in_homepage_block_allowed']) {
-      $settings['show_in_homepage_block'] = $node->show_in_homepage_block ? $node->show_in_homepage_block : 0;
+      $settings['show_in_homepage_block'] = $node->show_in_homepage_block;
     }
     else {
       $settings['show_in_homepage_block'] = $d_settings['show_in_homepage_block'];
     }
     if ($d_settings['gallery_public_status_allowed']) {
-      $settings['gallery_public_status'] = $node->gallery_public_status ? $node->gallery_public_status : 0;
+      $settings['gallery_public_status'] = $node->gallery_public_status;
     }
     else {
       $node->gallery_public_status = $d_settings['show_in_homepage_block'];
     }
     if ($d_settings['show_titles_allowed']) {
-      $settings['show_titles'] = $node->show_titles ? $node->show_titles : 0;
+      $settings['show_titles'] = $node->show_titles;
       $settings['ga_item_title_type'] = $node->ga_item_title_type;
     }
     else {
@@ -2430,13 +2431,13 @@ function gallery_assist_update($node) {
       $settings['ga_item_title_type'] = $d_settings['ga_item_title_type'];
     }
     if ($d_settings['show_in_userprofile_allowed']) {
-      $settings['show_in_userprofile'] = $node->show_in_userprofile ? $node->show_in_userprofile : 0;
+      $settings['show_in_userprofile'] = $node->show_in_userprofile;
     }
     else {
       $settings['show_in_userprofile'] = $d_settings['show_in_userprofile'];
     }
     if ($d_settings['gallery_items_shadow_allowed']) {
-      $settings['gallery_items_shadow'] = $node->gallery_items_shadow ? $node->gallery_items_shadow : 0;
+      $settings['gallery_items_shadow'] = $node->gallery_items_shadow;
     }
     else {
       $settings['gallery_items_shadow'] = $d_settings['gallery_items_shadow'];
@@ -2444,19 +2445,19 @@ function gallery_assist_update($node) {
   }
 
   if ($d_settings['extra_layout_settings_allowed'] == 1) {
-    $settings['ga_align'] = $node->ga_align ? $node->ga_align : $d_settings['ga_align'];
-    $settings['gap_align'] = $node->gap_align ? $node->gap_align : $d_settings['gap_align'];
-    $settings['t_ga_float'] = $node->t_ga_float ? $node->t_ga_float : $d_settings['t_ga_float'];
-    $settings['p_ga_float'] = $node->p_ga_float ? $node->p_ga_float : $d_settings['p_ga_float'];
-    $settings['t_thm_link_format'] = $node->t_thm_link_format ? $node->t_thm_link_format : $d_settings['t_thm_link_format'];
+    $settings['ga_align'] = $node->ga_align;
+    $settings['gap_align'] = $node->gap_align;
+    $settings['t_ga_float'] = $node->t_ga_float;
+    $settings['p_ga_float'] = $node->p_ga_float;
+    $settings['t_thm_link_format'] = $node->t_thm_link_format;
     if ($d_settings['hide_teaser_container_allowed']) {
-      $settings['hide_in_teaser'] = $node->hide_in_teaser ? $node->hide_in_teaser : 0;
+      $settings['hide_in_teaser'] = $node->hide_in_teaser;
     }
     else {
       $settings['hide_in_teaser'] = $d_settings['hide_teaser_container_allowed'];
     }
     if ($d_settings['show_download_link_allowed']) {
-      $settings['show_download_link'] = $node->show_download_link ? $node->show_download_link : 0;
+      $settings['show_download_link'] = $node->show_download_link;
     }
     else {
       $settings['show_download_link'] = $d_settings['show_download_link'];

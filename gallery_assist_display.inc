@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.1.2.25 2011/01/11 08:46:40 jcmc Exp $
+// $Id: gallery_assist_display.inc,v 1.1.2.27 2011/01/12 10:20:07 jcmc Exp $
 
 /**
  * @file
@@ -429,7 +429,7 @@ function gallery_assist_image_box($type, $item, $conf, $img) {
   $cover_text = t('[cover]');
   $elink = l($edit_text, 'node/ga_edit_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
   $elink .= l($delete_text, 'node/ga_del_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
-  $elink .= l($cover_text, 'ga_item_to_cover/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
+  $elink .= $item->cover == 1 ? '' : l($cover_text, 'ga_item_to_cover/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
 
   $node = new stdClass;
   $node->nid = $item->my_nid;
