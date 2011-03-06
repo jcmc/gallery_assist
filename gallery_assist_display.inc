@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.32 2010/05/18 22:27:32 jcmc Exp $
+// $Id: gallery_assist_display.inc,v 1.35 2010/06/01 16:07:50 jcmc Exp $
 
 /**
  * @file
@@ -76,7 +76,12 @@ function gallery_assist_display($node, $opt='', $owner='') {
       $next = "";
     }
     else {
-      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-next'), 'query' => array('page' => $page, 'titles' => $_GET['titles'])));
+
+      $link_query['page'] = $page;
+      if (isset($_GET['titles'])) {
+        $link_query['titles'] = $_GET['titles'];
+      }
+      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-next'), 'query' => $link_query));
     }
   }
   else {
@@ -84,9 +89,17 @@ function gallery_assist_display($node, $opt='', $owner='') {
     $page = $_GET['page'];
     $node->gall_pager->cshow = $node->gall_pager->show * $_GET['page'];
 
-    $preview = l($my_previous, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-previous'), 'query' => array('page' => ($_GET['page'] - 1), 'titles' => $_GET['titles'])));
+    $link_query['page'] = ($_GET['page'] - 1);
+    if (isset($_GET['titles'])) {
+      $link_query['titles'] = $_GET['titles'];
+    }
+    $preview = l($my_previous, $_GET['q'], array('html' => TRUE, 'attributes' => array('class' => $node->type .' pager-previous'), 'query' => $link_query));
     if ($node->gall_pager->cshow < count($my_boxes)) {
-      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'query' => array('page' => ($_GET['page'] + 1), 'titles' => $_GET['titles'])));
+      $link_query['page'] = ($_GET['page'] + 1);
+      if (isset($_GET['titles'])) {
+        $link_query['titles'] = $_GET['titles'];
+      }
+      $next = l($my_next, $_GET['q'], array('html' => TRUE, 'query' => $link_query));
     }
     else {
       $next = "";
@@ -243,6 +256,14 @@ function gallery_assist_display($node, $opt='', $owner='') {
 function gallery_assist_item_box($type, $item, $conf, $img) {
   global $user;
 
+  $shadow_style = '';
+
+  if ($conf['shadow'] == 1) {
+    $withshadow = ' shadow3';
+    $shadow_style = '-moz-box-shadow:5px 5px 5px;';
+    drupal_add_css(drupal_get_path('module', 'gallery_assist') .'/css/gallery_assist_shadow.css', 'module', 'all', FALSE);
+  }
+
   $item->nodetype = $type;
   $my_title_height = $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? 30 : 0;
   $my_item_width = $conf['thumbnail_size'] + $conf['thumbnail_size_plus'] + ($conf['item_padding'] * 2) + ($conf['item_border'] * 2);
@@ -258,7 +279,8 @@ function gallery_assist_item_box($type, $item, $conf, $img) {
     'id' => 'item-box-'. $item->pid,
     'class' => $type .' item-box',
     'style' => 'height:'. $my_item_height .'px;'.
-    'width:'. $my_item_width .'px;',
+               'width:'. $my_item_width .'px;'. 
+               $shadow_style
   );
 
   if ($conf['item_margin'] > 0) {
@@ -273,7 +295,6 @@ function gallery_assist_item_box($type, $item, $conf, $img) {
   $edit_link  = $user->uid == $item->uid ? $a_link : '';
   $ga_item_box   = gallery_assist_image_box($type, $item, $conf, $img);
   $ga_item_title = $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? gallery_assist_title_box($item, $conf) : '';
-  $ga_edit_link  = $_GET['links'] == 'on' ? $edit_link : '';
 
   $output = theme('gallery_assist_item_box', $ga_item_box, $ga_item_title, $ga_edit_link, $ga_item_attr);
 
@@ -333,7 +354,7 @@ function gallery_assist_image_box($type, $item, $conf, $img) {
   
     $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
     $my_img_attr = array(
-      $my_layout => $conf['thumbnail_size'] .'px',
+      $my_layout => $conf['thumbnail_size'],
       'style' => 'margin-top:'. $img['top'] .'px;',
     );
   }
@@ -366,7 +387,7 @@ function gallery_assist_image_box($type, $item, $conf, $img) {
 
     $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
     $my_img_attr = array(
-      $my_layout => $conf['thumbnail_size'] .'px',
+      $my_layout => $conf['thumbnail_size'],
       'style' => 'margin-top:'. $img['top'] .'px;',
     );
   } // without
@@ -378,24 +399,23 @@ function gallery_assist_image_box($type, $item, $conf, $img) {
 
   $item->my_img_attr = $my_img_attr;
   $my_img = gallery_assist_prepare_thms($item, $conf);
-
+//dsm($conf);
   $get_values = $_GET;
   unset($get_values['q']);
   $link = l('[edit]', 'node/ga_edit_one/'. $item->my_nid .'/'. $item->pid, array('query' => $get_values));
   $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>'."\n";
   $edit_link  = $user->uid == 1 || $user->uid == $item->uid || user_access('edit gallery_assist content', $user) || user_access('edit gallery_assist_'. $type .' content', $user) ? $link : '';
 
-  $output  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
-  $output  = '<div'. drupal_attributes($edit_link_attr) .'>'."\n";
-  $output .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
-  $output .= '</div>'."\n";
-  $output .= '</div>'."\n";
-  $output .= '</div>'."\n";
-
+  $link_query = array();
+  if (isset($_GET['page'])) {
+    $link_query['page'] = $_GET['page'];
+  }
+  if (isset($_GET['titles'])) {
+    $link_query['titles'] = $_GET['titles'];
+  }
   $output2  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
   $output2 .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output2 .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
+  $output2 .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
   $output2 .= '</div>'."\n";
   $output2 .= '</div>'."\n";
   $output2 .= '<div'. drupal_attributes($edit_link_attr) .'>'. $edit_link .'</div>'."\n";

@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_node_settings.inc,v 1.9 2010/05/18 22:27:32 jcmc Exp $
+// $Id: gallery_assist_node_settings.inc,v 1.12 2010/06/01 16:07:50 jcmc Exp $
 
 /**
  * @file
@@ -12,6 +12,8 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
   $form['load_modi'] = array(
     '#type' => 'fieldset',
     '#title' => t('Items order'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
 
   $form['gid'] = array(
@@ -55,6 +57,8 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
   $form['common'] = array(
     '#type' => 'fieldset',
     '#title' => t('Common'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
    // '#prefix' => '<div class="gallery-assist-settings">',
     '#access' => $data['common_settings_allowed'],
   );
@@ -111,7 +115,7 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
 
   // Toggle to display or hide items shadows.
   // Now work this option only in Windows Firefox and Safary.
-  $this['shadow'] = $node->shadow == 1 ? t('Uncheck to desable the items shadow. (only win)') : t('Check to enable the items shadow. (only win)');
+  $this['shadow'] = $node->shadow == 1 ? t('Uncheck to desable the items shadow.') : t('Check to enable the items shadow. (only for browsers which supporting this feature)');
   $form['common']['shadow'] = array(
     '#type' => 'checkbox',
     '#title' => t('Shadow'),
@@ -157,9 +161,9 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
   );
   $form['layout'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Extra layout settings'),
-    //'#collapsible' => TRUE,
-    //'#collapsed' => TRUE,
+    '#title' => t('Layout'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
     '#access' => $data['extra_layout_settings_allowed'],
     //'#description' => gallery_assist_advanced_help_builder($this['help']['layout']),
   );
@@ -167,24 +171,24 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
   $form['layout']['teaser'] = array(
     '#type' => 'fieldset',
     '#title' => t('Teaser container'),
-   // '#prefix' => '<div class="gallery-assist-settings-left">',
-   // '#suffix' => '</div>',
+    '#prefix' => '<div class="gallery-assist-settings-left">',
+    '#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the teaser view.'),
   );
 
   $form['layout']['page'] = array(
     '#type' => 'fieldset',
     '#title' => t('Page container'),
-   // '#prefix' => '<div class="gallery-assist-settings-left">',
-   // '#suffix' => '</div>',
+    '#prefix' => '<div class="gallery-assist-settings-left">',
+    '#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the page view.'),
   );
 
   $form['layout']['preview'] = array(
     '#type' => 'fieldset',
     '#title' => t('Preview'),
-   // '#prefix' => '<div class="gallery-assist-settings-left">',
-   // '#suffix' => '</div>',
+    '#prefix' => '<div class="gallery-assist-settings-left">',
+    '#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the image preview.'),
     '#access' => $data['display_download_link_allowed'],
   );
@@ -246,19 +250,20 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#value' => $node->gallconf[$node->type]['show_download_link'],
   );
 
-  if (module_exists('gallery_assist_comments')) {
-    $form['layout']['preview']['comments'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Enable or disable comments for the items of this gallery'),
-      '#default_value' => $node->comments,
-      '#access' =>  empty($data['comments']) || $data['comments'] == 0 ? FALSE : TRUE,
+  if (module_exists('i18n')) {
+    $form['localize_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Behavior by translations'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#weight' => 7,
+      '#access' => $node->gallconf[$node->type]['translation_behavior_allowed'],
     );
-    $form['layout']['preview']['comments_old'] = array(
-      '#type' => 'hidden',
-      '#value' => $node->comments,
-      '#access' =>  empty($data['comments']) || $data['comments'] == 0 ? FALSE : TRUE,
+    $form['localize_settings']['translation_behavior'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Take over the settings from the source'),
+      '#default_value' => $node->gallconf[$node->type]['translation_behavior'],
     );
   }
-
   return $form;
 }

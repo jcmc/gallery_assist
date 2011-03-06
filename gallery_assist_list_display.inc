@@ -337,7 +337,7 @@ function gallery_assist_image_box_list($type, $item, $conf, $img) {
   
     $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
     $my_img_attr = array(
-      $my_layout => $conf['thumbnail_size'] .'px',
+      $my_layout => $conf['thumbnail_size'],
       'style' => 'margin-top:'. $img['top'] .'px;',
     );
   }
@@ -373,7 +373,7 @@ function gallery_assist_image_box_list($type, $item, $conf, $img) {
   
     $my_layout = $img['pos'] == 'v' ? 'height' : 'width';
     $my_img_attr = array(
-      $my_layout => $conf['thumbnail_size'] .'px',
+      $my_layout => $conf['thumbnail_size'],
       'style' => 'margin-top:'. $img['top'] .'px;',
     );
   } // Without force.

@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.38 2010/05/19 03:08:56 jcmc Exp $
+// $Id: gallery_assist.install,v 1.40 2010/05/25 02:47:37 jcmc Exp $
 
 /**
  * @file
@@ -382,7 +382,7 @@ function gallery_assist_install() {
     'gallery_items_shadow_allowed' => 0,
     // DB
     'ga_db_order_field' => 'weight',
-    'ga_db_order' => 'DESC',
+    'ga_db_order' => 'ASC',
   );
 
   // Set the default variables and default values for gallery assist block gallery..
@@ -745,7 +745,7 @@ function gallery_assist_update_4() {
   // Add the missing default params for ordering of gallery items by load from the DB.
   $check['default'] = variable_get('gallery_assist_default_data', FALSE);
   $check['default']['ga_db_order_field'] = isset($check['default']['ga_db_order_field']) && $check['default']['ga_db_order_field'] ? $check['default']['ga_db_order_field'] : 'weight';
-  $check['default']['ga_db_order'] = isset($check['default']['ga_db_order']) && $check['default']['ga_db_order'] ? $check['default']['ga_db_order'] : 'DESC';
+  $check['default']['ga_db_order'] = isset($check['default']['ga_db_order']) && $check['default']['ga_db_order'] ? $check['default']['ga_db_order'] : 'ASC';
   variable_set('gallery_assist_'. $v->type, $check['default']);
   // Add the missing assigment params for ordering of gallery items by load from the DB.
   $types = node_get_types();
@@ -753,7 +753,7 @@ function gallery_assist_update_4() {
     if (variable_get('gallery_assist_'. $v->type, 0) == 1) {
       $check[$v->type] = variable_get('gallery_assist_'. $v->type .'_data', FALSE);
       $check[$v->type]['ga_db_order_field'] = isset($check[$v->type]['ga_db_order_field']) && $check[$v->type]['ga_db_order_field'] ? $check[$v->type]['ga_db_order_field'] : 'weight';
-      $check[$v->type]['ga_db_order'] = isset($check[$v->type]['ga_db_order']) && $check[$v->type]['ga_db_order'] ? $check[$v->type]['ga_db_order'] : 'DESC';
+      $check[$v->type]['ga_db_order'] = isset($check[$v->type]['ga_db_order']) && $check[$v->type]['ga_db_order'] ? $check[$v->type]['ga_db_order'] : 'ASC';
       
       variable_set('gallery_assist_'. $v->type .'_data', $check[$v->type]);
     }

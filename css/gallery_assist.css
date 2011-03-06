@@ -1,4 +1,4 @@
-/* $Id: gallery_assist.css,v 1.24 2010/05/18 22:27:32 jcmc Exp $ */
+/* $Id: gallery_assist.css,v 1.28 2010/06/01 16:07:50 jcmc Exp $ */
 
 #gallery-assist-users-help {
   margin: 0 20px;
@@ -168,7 +168,7 @@ div#ga-pager-box  div.pager li a {color:#fff999;}
 }
 
 .ga_titles {
-  white-space: wrap;
+  white-space: normal;
 }
 
 .ga_created {
@@ -226,7 +226,7 @@ div#ga-pager-box  div.pager li a {color:#fff999;}
   z-index:20;
 }
 .ga-item-edit-link:hover {
-  opacity:0.9;
+  opacity: 0.9;
 }
 
 
@@ -244,14 +244,14 @@ div#ga-pager-box  div.pager li a {color:#fff999;}
 
 .ga-item-edit-link a:hover {
   color: #111;
-  background: ffcc66;
+  background: #ffcc66;
 }
 
 .ga-pager-box pager-item {
   display: none;
 }
 .ga-form-weight {
-  width = 1px;
+  width : 1px;
 }
 .ga-align-left {
   text-align:left;
@@ -266,9 +266,7 @@ div#ga-pager-box  div.pager li a {color:#fff999;}
 div.ga-back-link {
   margin-right: 5px;
 }
-div.ga-edit-item-link {
-  
-}
+
 div.nav-links {
   background: transparent;
 }
@@ -281,6 +279,7 @@ div.ga-edit-item-link {
   height:16px;
   width:16px;
   overflow:hidden;
+
 }
 div.ga-edit-item-link:hover {
   background:transparent url(../images/css-sprites.png) no-repeat scroll 0 0;
@@ -288,7 +287,7 @@ div.ga-edit-item-link:hover {
 }
 div.ga-edit-item-link a {
   background: transparent;
-  color:transparent;
+  padding-left:20px;
 }
 div.ga-back-link {
   background:transparent url(../images/icon-set.png) repeat scroll 0 0;
@@ -304,6 +303,36 @@ div.ga-back-link:hover {
 }
 div.ga-back-link a {
   background: transparent;
-  color:transparent;
+  padding-left:20px;
 }
 
+.ga-nowrap {
+  white-space: nowrap;
+}
+
+.ga-fullwidth {
+  width: 100%;
+}
+
+#ga-pager-box .item-list {
+  border:0;
+  background:transparent;
+}
+
+.ga-container-teaser-align-left {margin-right:auto;text-align:left;}
+.ga-container-teaser-align-right {}
+.ga-container-teaser-align-center {}
+.ga-container-teaser-float-left {}
+.ga-container-teaser-float-right {}
+.ga-container-page-align-left {}
+.ga-container-page-align-right {}
+.ga-container-page-align-center {}
+.ga-container-page-float-left {}
+.ga-container-page-float-right {}
+
+/* by zero point theme add the lines to the end of file style-zero.css
+body.layout-jello .page {
+  padding-left:0;
+  padding-right:0;
+}
+*/
