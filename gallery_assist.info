@@ -1,44 +1,19 @@
-; $Id: gallery_assist.info,v 1.11 2009/12/03 14:17:26 jcmc Exp $
+; $Id: gallery_assist.info,v 1.1.2.20 2010/04/06 00:48:47 jcmc Exp $
 name = Gallery Assist
 description = "Drupal content type with gallery functionality."
 package = "Media"
 core = 6.x
 
-; Information added by drupal.org packaging script on 2009-10-11
-version = "6.x-1.5"
+; Information added by drupal.org packaging script on 2010-03-30
+version = "6.x-1.x-dev"
 core = "6.x"
 project = "gallery_assist"
-datestamp = "1255222841"
+datestamp = "1269907678"
 
 
-; Information added by drupal.org packaging script on 2009-10-17
-version = "6.x-1.6"
+; Information added by drupal.org packaging script on 2010-04-06
+version = "6.x-1.9"
 core = "6.x"
 project = "gallery_assist"
-datestamp = "1255799737"
-
-; Information added by drupal.org packaging script on 2009-11-18
-version = "6.x-1.7"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1258572374"
-
-
-; Information added by drupal.org packaging script on 2009-11-19
-version = "6.x-1.8-beta1"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1258620336"
-
-; Information added by drupal.org packaging script on 2009-12-03
-version = "6.x-1.1-beta5"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1259843442"
-
-; Information added by drupal.org packaging script on 2009-12-03
-version = "6.x-1.8"
-core = "6.x"
-project = "gallery_assist"
-datestamp = "1259857541"
+datestamp = "1270515612"
 

@@ -1,514 +1,1079 @@
-# $Id: gallery_assist.de.po,v 1.1 2009/10/11 00:20:09 jcmc Exp $
+# $Id: gallery_assist.de.po,v 1.1.2.4 2010/03/09 21:01:01 jcmc Exp $
 #
 # German translation of Drupal (general)
-# Copyright 2009 Juan Morejón <jcmc.devel@gmail.com>
+# Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  gallery_assist.admin.inc, v 1.5 2009/09/29 18:42:00 jcmc
-#  gallery_assist.module, v 1.5 2009/10/06 16:10:00 jcmc
-#  gallery_assist.info, v 1.5 2009/07/22 15:03:00 jcmc
-#  gallery_assist_display.inc, v 1.5 2009/09/09 18:54:00 jcmc
-#  gallery_assist.install, v 1.5 2009/10/06 15:09:00 jcmc
+#  gallery_assist.admin.inc,v 1.1.2.7 2010/01/27 18:23:51 jcmc
+#  gallery_assist.module,v 1.1.2.14 2010/02/19 14:13:27 jcmc
+#  gallery_assist.info,v 1.1.2.7 2010/02/03 04:12:12 jcmc
+#  gallery_assist_display.inc,v 1.1.2.4 2010/01/25 05:11:56 jcmc
+#  gallery_assist_list_display.inc,v 1.0 2009/11/22 03:09:34 jcmc
+#  gallery_assist.install,v 1.1.2.5 2010/01/25 05:11:56 jcmc
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-10-08 17:15+0200\n"
-"PO-Revision-Date: 2009-10-08 17:15+0200\n"
-"Last-Translator: Juan Morejón <jcmc.devel@gmail.com>\n"
+"POT-Creation-Date: 2010-02-28 09:06+0100\n"
+"PO-Revision-Date: 2010-02-28 09:06+0100\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: German <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: gallery_assist.admin.inc:19
+#: gallery_assist.admin.inc:20
 msgid "enabled"
 msgstr "Aktiviert"
 
-#: gallery_assist.admin.inc:19
+#: gallery_assist.admin.inc:20
 msgid "disabled"
 msgstr "Deaktiviert"
 
-#: gallery_assist.admin.inc:21 gallery_assist.module:47;250;313;195;206 gallery_assist.info:0
+#: gallery_assist.admin.inc:22 gallery_assist.module:85;282;345;226;237 gallery_assist.info:0
 msgid "Gallery Assist"
 msgstr "Galerie Assistent"
 
-#: gallery_assist.admin.inc:21
+#: gallery_assist.admin.inc:22
 msgid "Gallery Assist on @typename"
-msgstr ""
+msgstr "Galerieassistent in @typename"
 
-#: gallery_assist.admin.inc:50;149
+#: gallery_assist.admin.inc:51;225
 msgid "Layout"
 msgstr "Layout"
 
-#: gallery_assist.admin.inc:57
+#: gallery_assist.admin.inc:58
 msgid "Thumbnails per row"
 msgstr "Miniaturen pro Zeile"
 
-#: gallery_assist.admin.inc:64
+#: gallery_assist.admin.inc:65
+msgid "Thumbnails per row for the teaser"
+msgstr "Miniaturen pro Zeile für den Teaser"
+
+#: gallery_assist.admin.inc:68
+msgid "Default is 0. Use this value to overwrite the teaser nummber of thumbnails pro row."
+msgstr ""
+"Der Standardwert ist 0. Ändern Sie diesen Wert um die Anzahl der "
+"Teaser-Bilder pro Zeile zu überschrieben."
+
+#: gallery_assist.admin.inc:72
 msgid "Rows per page"
 msgstr "Zeilen pro Seite"
 
-#: gallery_assist.admin.inc:71
-msgid "Cut item title text for display"
-msgstr "Länge des Titels anpassen."
-
 #: gallery_assist.admin.inc:80
+msgid "Thumbnails"
+msgstr "Miniaturen"
+
+#: gallery_assist.admin.inc:85
 msgid "Items margin"
 msgstr "Elemente Seitenränder"
 
-#: gallery_assist.admin.inc:88
+#: gallery_assist.admin.inc:92
 msgid "Items padding"
 msgstr "Elemente Innenabstand"
 
-#: gallery_assist.admin.inc:95
+#: gallery_assist.admin.inc:99
 msgid "Items border"
 msgstr "Elemente Rahmen"
 
-#: gallery_assist.admin.inc:104
+#: gallery_assist.admin.inc:108
 msgid "Items border color"
 msgstr "Elemente Rahmencolor"
 
-#: gallery_assist.admin.inc:111
+#: gallery_assist.admin.inc:114
+msgid "Titles and Help links"
+msgstr "Titel- und Hilfelinks"
+
+#: gallery_assist.admin.inc:117
+msgid "Enable this parameter to display a back link if the breadcrumb is disabled."
+msgstr ""
+"Parameter aktivieren um einen \"zurück Link\" zu zeigen falls die "
+"Navigation-Verfolgung inaktiv ist."
+
+#: gallery_assist.admin.inc:120
 msgid "Back link"
 msgstr "Zurück Link"
 
-#: gallery_assist.admin.inc:119
+#: gallery_assist.admin.inc:121;130;148
+msgid "off"
+msgstr "aus"
+
+#: gallery_assist.admin.inc:121;130;148
+msgid "on"
+msgstr "an"
+
+#: gallery_assist.admin.inc:126
+msgid "With creation of the article are images-titles shown."
+msgstr ""
+"Vorgabe wählen, damit Bilder-Titlen bei der Erstellung eines Artikels "
+"angezeigt werden oder nicht."
+
+#: gallery_assist.admin.inc:129
+msgid "Display titles"
+msgstr "Zeige Titeln"
+
+#: gallery_assist.admin.inc:135
+msgid "Adjust the length of the titles to the width of the miniatures."
+msgstr "Wert zur Anpassung der Titellänge an die Breite der Miniaturen"
+
+#: gallery_assist.admin.inc:137
+msgid "Cut item title text for display"
+msgstr "Länge des Titels anpassen."
+
+#: gallery_assist.admin.inc:144
+msgid "Toggle to show or hide the images titles."
+msgstr "Link einblenden für das Zeigen oder Ausblenden der Bilder Titel."
+
+#: gallery_assist.admin.inc:147
 msgid "Title links toggle"
 msgstr "Titel-Umschalter"
 
-#: gallery_assist.admin.inc:126
+#: gallery_assist.admin.inc:153
+msgid "The link can be possisioned acord your goal bellow or above of the gallery  container."
+msgstr ""
+"Der Titel-Umschalter kann vor oder nach dem Galeriecontainer "
+"angezeigt."
+
+#: gallery_assist.admin.inc:156
 msgid "Title links position"
 msgstr "Titel-Umschalter Position"
 
-#: gallery_assist.admin.inc:135
-msgid "Pager"
-msgstr "Pager"
+#: gallery_assist.admin.inc:157
+msgid "Above of the gallery container"
+msgstr "Vor dem Galerie Container"
 
-#: gallery_assist.admin.inc:141
+#: gallery_assist.admin.inc:157
+msgid "Below of the gallery container"
+msgstr "Nach dem Galerie Container"
+
+#: gallery_assist.admin.inc:165 gallery_assist.module:625
+msgid "Teaser container"
+msgstr "Teaser Container"
+
+#: gallery_assist.admin.inc:171
+msgid "Pager container"
+msgstr "Pager Container"
+
+#: gallery_assist.admin.inc:177
+msgid "Teaser container align"
+msgstr "Teaser-Container ausrichten"
+
+#: gallery_assist.admin.inc:184
+msgid "Teaser container float"
+msgstr "Teaser-Container schweben"
+
+#: gallery_assist.admin.inc:185;199
+msgid "none"
+msgstr "Keine"
+
+#: gallery_assist.admin.inc:185;199
+msgid "left"
+msgstr "links"
+
+#: gallery_assist.admin.inc:185;199
+msgid "right"
+msgstr "rechts"
+
+#: gallery_assist.admin.inc:191
+msgid "Page container align"
+msgstr "Seite-Container ausrichten"
+
+#: gallery_assist.admin.inc:198
+msgid "Page container float"
+msgstr "Seite-Container schweben"
+
+#: gallery_assist.admin.inc:207
+msgid "Pager"
+msgstr "Seitennavigation"
+
+#: gallery_assist.admin.inc:213
+msgid "The pager can be numeric or graphic. <br />If graphic enabled it shows mini thumnails. The Gallery Assist Pager is customizable through a template."
+msgstr ""
+"Die Seitennavigation kann numerisch oder grafisch sein. <br />Wenn "
+"grafisch, werden thumbnails gezeigt. Es ist anpassbar durch einen "
+"Template."
+
+#: gallery_assist.admin.inc:215
 msgid "Type"
 msgstr "Typ"
 
-#: gallery_assist.admin.inc:144
+#: gallery_assist.admin.inc:218
 msgid "Numeric"
-msgstr ""
+msgstr "Numerisch"
 
-#: gallery_assist.admin.inc:144
+#: gallery_assist.admin.inc:218
 msgid "Icons"
 msgstr "Icons"
 
-#: gallery_assist.admin.inc:157
+#: gallery_assist.admin.inc:223
+msgid "Choose a layout."
+msgstr "Layout auswählen"
+
+#: gallery_assist.admin.inc:223
+msgid "To obtain the list of avaiable skins create a folder ga_pager in your theme folder and copy there the wanted skins from your_contributed_modules/gallery_assist/ga_pager to."
+msgstr ""
+"Um die Liste der vorhandene Layouts zu sehen, muss ein Ordner "
+"\"ga_pager\" im Ordner der aktive Theme erstellt werden und dort "
+"sollen die verschiedene gelieferte layouts copiert werden. Diese "
+"befinden sich in dem Modulordner."
+
+#: gallery_assist.admin.inc:232
+msgid "Weight of the gallery pager in the GA Image View relative to the image-container."
+msgstr ""
+"Wichtung des Gallery-Pagers relativ zu den Bild-container in der "
+"Bildanzeige."
+
+#: gallery_assist.admin.inc:234
 msgid "Position"
 msgstr "Position"
 
-#: gallery_assist.admin.inc:160
+#: gallery_assist.admin.inc:237
 msgid "top"
 msgstr "oben"
 
-#: gallery_assist.admin.inc:160
+#: gallery_assist.admin.inc:237
 msgid "bottom"
 msgstr "unten"
 
-#: gallery_assist.admin.inc:160
+#: gallery_assist.admin.inc:237
 msgid "both"
 msgstr "beide"
 
-#: gallery_assist.admin.inc:165
+#: gallery_assist.admin.inc:241
+msgid "Choose how many items should having the GA-pager on this node type."
+msgstr ""
+"Auswählen wieviele Elemente soll der Pager zeigen in diesem "
+"Artikeltyp."
+
+#: gallery_assist.admin.inc:243
 msgid "Quantity of visible links"
 msgstr "Anzahl sichtbarer Links"
 
-#: gallery_assist.admin.inc:180;253 gallery_assist.module:1757
+#: gallery_assist.admin.inc:252
+msgid "Thumbnail height"
+msgstr "Miniaturhöhe"
+
+#: gallery_assist.admin.inc:262
+msgid "Thumbnail height: active"
+msgstr "Miniaturhöhe: aktiv"
+
+#: gallery_assist.admin.inc:279
+msgid "ImageCache preset"
+msgstr "ImageCache vorkonfigurierter Format."
+
+#: gallery_assist.admin.inc:283
+msgid "Current used setting: @pager_thm_presetname"
+msgstr "Aktuelle verwendete Einstellung: @pager_thm_presetname"
+
+#: gallery_assist.admin.inc:290
+msgid "Others"
+msgstr "Andere"
+
+#: gallery_assist.admin.inc:301 gallery_assist.module:763
+msgid "Display the download link"
+msgstr "Download-Link anzeigen"
+
+#: gallery_assist.admin.inc:303
+msgid "If cheked the download link is displayed. The value can be setted for each node and for each gallery item."
+msgstr ""
+"Wenn diese Option eingeschaltet ist, wird der Download-Link gezeigt. "
+"Diese Option ist konfigurierbar per Artikeltyp, per Artikel und per "
+"Galerie-Bild."
+
+#: gallery_assist.admin.inc:307 gallery_assist.module:650
+msgid "privat: <em>Only the owner can see the gallery.</em>"
+msgstr "privat: <em>Nur der Besitzer kann diese Galerie sehen.</em>"
+
+#: gallery_assist.admin.inc:308 gallery_assist.module:651
+msgid "public: <em>Public for all authenticated users.</em>"
+msgstr "öffentlich: <em>Für aller authentifizierte Benutzer.</em>"
+
+#: gallery_assist.admin.inc:309 gallery_assist.module:652
+msgid "public for all: <em>Public for all users and anonymous.</em>"
+msgstr ""
+"öffentlich für alle: <em>Für aller authentifizierte Benutzer und "
+"Anonymous.</em>"
+
+#: gallery_assist.admin.inc:313 gallery_assist.module:656
+msgid "Gallery Public Status"
+msgstr "Gallery Veröffentlichungsoptionen"
+
+#: gallery_assist.admin.inc:315 gallery_assist.module:658
+msgid "privat"
+msgstr "privat"
+
+#: gallery_assist.admin.inc:315 gallery_assist.module:658
+msgid "public"
+msgstr "öffentlisch"
+
+#: gallery_assist.admin.inc:315 gallery_assist.module:658
+msgid "public for all"
+msgstr "öffentlisch für alle"
+
+#: gallery_assist.admin.inc:321
+msgid "Allow Public Status option"
+msgstr "Erlaubt die Benutzung von Veröffentlichungsoptionen."
+
+#: gallery_assist.admin.inc:324
+msgid "Allow owners to set the status theirs galleries to privat or public"
+msgstr ""
+"Galerie-Benutzer dürfen diese Option für jeder ihrer Galerien "
+"ändern."
+
+#: gallery_assist.admin.inc:329
+msgid "Images per node"
+msgstr "Bilder per Artikel"
+
+#: gallery_assist.admin.inc:332
+msgid "Allowed amount of images per article (node)"
+msgstr "Erlaubte Bilderanzahl in einem Artikel."
+
+#: gallery_assist.admin.inc:337
+msgid "Amount of uploads fields"
+msgstr "Upload-Felder-Anzahl"
+
+#: gallery_assist.admin.inc:340
+msgid "Allowed amount of form upload fields per article (node)"
+msgstr "Anzahl der Upload-Felder die im Artikel-Edit-Formular erscheinen soll."
+
+#: gallery_assist.admin.inc:346
+msgid "Comments"
+msgstr "Kommentare"
+
+#: gallery_assist.admin.inc:348
+msgid "If cheked, comment functionalty for gallery items is enable."
+msgstr ""
+
+#: gallery_assist.admin.inc:355
+msgid "Display-Item Effects"
+msgstr ""
+
+#: gallery_assist.admin.inc:376;514 gallery_assist.module:1397
 msgid "Save"
 msgstr "Speichern"
 
-#: gallery_assist.admin.inc:222
+#: gallery_assist.admin.inc:428
 msgid "Gallery Assist Extras"
 msgstr "Galerie-Assisten Extras"
 
-#: gallery_assist.admin.inc:231
-msgid "Assigments"
-msgstr "Zuweisungen"
+#: gallery_assist.admin.inc:436
+msgid "Upload proccess"
+msgstr "Upload-Prozes"
 
-#: gallery_assist.admin.inc:235
+#: gallery_assist.admin.inc:444
+msgid "Files save method"
+msgstr "Dateien Speicherungsmethode"
+
+#: gallery_assist.admin.inc:446
+msgid "Rename files"
+msgstr "Dateien umbenennen"
+
+#: gallery_assist.admin.inc:446
+msgid "Replace files"
+msgstr "Dateien überschreiben"
+
+#: gallery_assist.admin.inc:454
+msgid "Gallery functionality assigments"
+msgstr "Galerie-Funktionalitätszuweisung"
+
+#: gallery_assist.admin.inc:458
 msgid "Assign the gallery functionality to other content types."
 msgstr "Galerie-Funktionalität anderen Inhaltstypen zuweisen."
 
-#: gallery_assist.admin.inc:290
+#: gallery_assist.admin.inc:481
+msgid "Pager limit in the node edit form"
+msgstr "Anzahl der Elemente im Pager "
+
+#: gallery_assist.admin.inc:482
+msgid "Limit of the number of listed images in the edit form."
+msgstr "Limit der Anzahl der aufgelisteten Bilder in das Bearbeiten-Formular."
+
+#: gallery_assist.admin.inc:489
+msgid "Gallery Assist form fiedsets weight"
+msgstr "Wichtung der Galerie Assistent Formularelemente"
+
+#: gallery_assist.admin.inc:490
+msgid "A little help tu set the weight of fieldsets."
+msgstr ""
+"Eine kleine Hilfe um die Gallery Assist Formularelemente in der "
+"Ansicht gruppieren zu können."
+
+#: gallery_assist.admin.inc:500
+msgid "Warning: high-traffic sites with many galleries will experience performance slowdowns while cached data is rebuilt."
+msgstr ""
+"Warnung: Während des Neuaufbaus des Caches können v.a. unter hoher "
+"Last (viele Galerien) stehende Websites langsamer werden."
+
+#: gallery_assist.admin.inc:505;507
+msgid "Clear the Gallery Assist cached data"
+msgstr "Galerie-Cache leeren"
+
+#: gallery_assist.admin.inc:558
 msgid "Sizes"
 msgstr "Größen"
 
-#: gallery_assist.admin.inc:297
+#: gallery_assist.admin.inc:565
 msgid "Upload"
 msgstr "Upload"
 
-#: gallery_assist.admin.inc:304
+#: gallery_assist.admin.inc:572
 msgid "Thumbnail upload size"
 msgstr "Upload Miniaturengröße"
 
-#: gallery_assist.admin.inc:313
+#: gallery_assist.admin.inc:579
 msgid "Preview upload size"
 msgstr "Upload Vorschaugröße"
 
-#: gallery_assist.admin.inc:323
+#: gallery_assist.admin.inc:587
 msgid "Display"
 msgstr "Anzeige"
 
-#: gallery_assist.admin.inc:334
+#: gallery_assist.admin.inc:598
 msgid "Thumbnail display size"
 msgstr "Thumbnail Anzeigegröße"
 
-#: gallery_assist.admin.inc:342
+#: gallery_assist.admin.inc:605
 msgid "Preview display size"
 msgstr "Vorschau Anzeigegröße"
 
-#: gallery_assist.admin.inc:350
+#: gallery_assist.admin.inc:612;677
 msgid "Extra thumbnail custom size"
 msgstr "Extra Abstand (wenn benötigt)"
 
-#: gallery_assist.admin.inc:367
+#: gallery_assist.admin.inc:615;680
+msgid "Extend the width of thumbnails needed for layout."
+msgstr "Es erweitert die Breite des Bildes für Anpassungen im Layout."
+
+#: gallery_assist.admin.inc:620;670
+msgid "Force image height"
+msgstr "Bildhöhe zwingen"
+
+#: gallery_assist.admin.inc:642
 msgid "ImagaCache presets"
 msgstr "Definierte ImageCache-Formate"
 
-#: gallery_assist.admin.inc:379
+#: gallery_assist.admin.inc:654 gallery_assist.module:3350
 msgid "Thumbnail preset"
 msgstr "Definiertes Miniatur-Format"
 
-#: gallery_assist.admin.inc:382
-msgid "Current used setting"
-msgstr "Aktuelle verwendete Einstellung"
+#: gallery_assist.admin.inc:657 gallery_assist.module:3353
+msgid "Current used setting: @thm_presetname"
+msgstr "Aktuelle verwendete Einstellung: @thm_presetname"
 
-#: gallery_assist.admin.inc:387
+#: gallery_assist.admin.inc:662
 msgid "Preview preset"
 msgstr "Vordefiniertes Vorschau-Format"
 
-#: gallery_assist.admin.inc:390
+#: gallery_assist.admin.inc:665
 msgid "Current used setting: @prev_presetname"
-msgstr ""
+msgstr "Aktuelle verwendete Einstellung: @prev_presetname"
 
-#: gallery_assist.admin.inc:397
+#: gallery_assist.admin.inc:692
 msgid "Module developed by <a target=\"_blank\" href=\"@ga_creator_link\">Juan Morejón</a> from the <a target=\"_blank\" href=\"@qtg_link\">Quiptime Group</a>"
-msgstr "Este módulo fue desarrollado <a target=\"_blank\" href=\"@ga_creator_link\">Juan Morejón</a> del <a target=\"_blank\" href=\"@qtg_link\">Quiptime Group</a>"
+msgstr ""
+"Dieses Modul wurde von <a target=\"_blank\" "
+"href=\"@ga_creator_link\">Juan Morejón</a> der <a target=\"_blank\" "
+"href=\"@qtg_link\">Quiptime Gruppe</a> entwickelt."
 
-#: gallery_assist_display.inc:57 gallery_assist.module:1490
+#: gallery_assist.admin.inc:714
+msgid "Node type upload settings"
+msgstr "Artikeltyp Upload-Konfiguration"
+
+#: gallery_assist.admin.inc:720
+msgid "The maximum allowed image size (e.g. 640x480). Set to 0 for no restriction. If an <a href=\"!image-toolkit-link\">image toolkit</a> is installed, files exceeding this value will be scaled down to fit."
+msgstr ""
+"Die maximal zulässige Bildgröße (z.B. 640x480). Zur Aufhebung von "
+"Beschränkungen kann 0 eingestellt werden. Wenn ein <a "
+"href=\"!image-toolkit-link\">Bild-Toolkit</a> installiert ist, werden "
+"zu große Bilder entsprechend verkleinert."
+
+#: gallery_assist.admin.inc:723
+msgid "Maximum resolution for uploaded images"
+msgstr "Maximale Auflösung für hochgeladene Bilder"
+
+#: gallery_assist.admin.inc:728
+msgid "WIDTHxHEIGHT"
+msgstr "BREITE×HÖHE"
+
+#: gallery_assist.admin.inc:731
+msgid "Extensions that users can upload. Separate extensions with a space and do not include the leading dot. Alloved are jpg jpeg gif png."
+msgstr ""
+"Datei-Erweiterungen, die Benutzer hochladen können. Die Erweiterungen "
+"sollen ohne Punkt und mit Komma getrennt werden. Erlaubt sind jpg, "
+"jpeg, gif, png."
+
+#: gallery_assist.admin.inc:734
+msgid "Default permitted file extensions"
+msgstr "Standardmäßig erlaubte Dateitypen"
+
+#: gallery_assist.admin.inc:740
+msgid "The default maximum file size a user can upload. If an image is uploaded and a maximum resolution is set, the size will be checked after the file has been resized. Use dot and number (.5) for an file size smoll as 1MB."
+msgstr ""
+"Die standardmäßige maximale Dateigröße, welche Benutzer hochladen "
+"können. Wenn ein Bild hochgeladen und einer maximalen Auflösung "
+"eingestellt ist, wird die Größe überprüft, nachdem die Datei "
+"Größe verändert wurde. Punkt verwenden und Zahlen zwischen 0 und 1 "
+"zu einstellen. Z.B. (<strong>.5</strong>: entspricht 500k) für eine "
+"Dateigröße kleiner als 1MB."
+
+#: gallery_assist.admin.inc:743
+msgid "Default maximum file size per upload"
+msgstr "Standardmäßige maximale Dateigröße pro Datei"
+
+#: gallery_assist.admin.inc:748;759
+msgid "MB"
+msgstr "MB"
+
+#: gallery_assist.admin.inc:751
+msgid "The default maximum size of all files a user can have on the site."
+msgstr ""
+"Die standardmäßige maximale Größe aller Dateien, die ein Benutzer "
+"haben darf."
+
+#: gallery_assist.admin.inc:754
+msgid "Default total file size per user"
+msgstr "Standardmäßige gesamte Dateigröße pro Benutzer"
+
+#: gallery_assist.admin.inc:762
+msgid "Your PHP settings limit the maximum file size per upload to %size."
+msgstr ""
+"Die PHP-Einstellungen beschränken die maximale Dateigröße pro Datei "
+"auf %size."
+
+#: gallery_assist_display.inc:63 gallery_assist_list_display.inc:66 gallery_assist.module:2863
 msgid "next ›"
 msgstr "nächste Seite ›"
 
-#: gallery_assist_display.inc:60 gallery_assist.module:1488
+#: gallery_assist_display.inc:66 gallery_assist_list_display.inc:69 gallery_assist.module:2861
 msgid "‹ previous"
 msgstr "‹ vorherige Seite"
 
-#: gallery_assist.module:39
+#: gallery_assist.module:64
+msgid "Gallery Assist Help."
+msgstr "Galerie-Assistent Hilfe"
+
+#: gallery_assist.module:77
 msgid "The \"Gallery Assist\" module create a node type with gallery functionality. The gallery functionalities can be assigned to other content types."
 msgstr ""
 "Das Modul \"Galerie-Assistent\" erzeugt einen Inhaltstyp mit "
 "Galerie-Funktionalität. Diese Funktionalität kann anderen "
 "Inhaltstypen zugewiesen werden."
 
-#: gallery_assist.module:40
+#: gallery_assist.module:78
 msgid "It offers the following features:"
 msgstr "Es bietet die folgenden Features:"
 
-#: gallery_assist.module:41
+#: gallery_assist.module:79
 msgid "Configurable presets independently of the CCK, Imagecache and Image modules."
 msgstr ""
 "Konfigurierbare Formate unaghängich von den Modulen CCK, ImageCache "
 "und Image."
 
-#: gallery_assist.module:42
+#: gallery_assist.module:80
 msgid "Configurable display options."
 msgstr "Konfigurierbare Anzeige-Optionen"
 
-#: gallery_assist.module:43
+#: gallery_assist.module:81
 msgid "Configurable gallery and picture pager."
 msgstr "Konfigurierbarer Galerie- und Bilderschalter."
 
-#: gallery_assist.module:44
+#: gallery_assist.module:82
 msgid "Support for multilingualism - i18n module compatible."
 msgstr "Integrierte Mehrsprachigkeit - kompatibles mit dem Modul i18n."
 
-#: gallery_assist.module:45
+#: gallery_assist.module:83
 msgid "The gallery functionality can be assigned to others node types and can be configured separately for each one."
 msgstr ""
 "Die Galerie-Funktionalität kann anderen Inhaltstypen zugewiesen und "
 "kann unabhängig konfiguriert werden."
 
-#: gallery_assist.module:46
+#: gallery_assist.module:84
 msgid "By this gallery module solution are images not nodes, images are items that belong to the nodes of content types with gallery assigment."
 msgstr ""
 "Bei dieser Modullösung sind Bilder keine Inhaltstypen sondern "
 "Elemente eines einzigen Artikeltyps, zB Galerie oder anderer "
 "Inhaltstyp mit zugewiesener Galerie-Funktionalität. "
 
-#: gallery_assist.module:47
+#: gallery_assist.module:85
 msgid "%mname <a href=\"@gallery_assist_examples\">examples</a>."
 msgstr "%mname <a href=\"@gallery_assist_examples\">Beispiele</a>. "
 
-#: gallery_assist.module:48
+#: gallery_assist.module:86
 msgid "Why save the node before add items to the gallery?"
 msgstr ""
 "Warum soll ein Artikel zuerst gespeichert werden bevor man Bilder zu "
 "der Galerie hizufügt?"
 
-#: gallery_assist.module:49
+#: gallery_assist.module:87
 msgid "The node id is needed in order to generate the gallery folder name. Thereby we avoid unnecessary transfer in case the editor breaks the creation process without saving."
 msgstr ""
 "Die Artikel ID (nid) wird für das Erzeugen des Galerie-Verzeichniss "
 "benötigt und es wird unnötiger Transfer vermieden."
 
-#: gallery_assist.module:74
-msgid "Gallery Assist Help."
-msgstr "Galerie-Assistent Hilfe"
-
-#: gallery_assist.module:88;1843
+#: gallery_assist.module:120
 msgid "Gallery"
 msgstr "Galerie"
 
-#: gallery_assist.module:90
+#: gallery_assist.module:122
 msgid "Drupal content type with gallery functionality. It allows the assignment of this gallery functionality to other node types."
 msgstr ""
 "Drupal Inhaltstyp mit Galerie-Funktionalität. Diese Funktionalität "
 "kann anderen Inhaltstypen zugewiesen werden."
 
-#: gallery_assist.module:92
+#: gallery_assist.module:124
 msgid "Gallery title"
 msgstr "Galerie Titel"
 
-#: gallery_assist.module:94
-msgid "Gallery description"
-msgstr "Gallery-Beschreibung"
+#: gallery_assist.module:126
+msgid "Gallery Description"
+msgstr "Galerie-Beschreibung"
 
-#: gallery_assist.module:272
+#: gallery_assist.module:304
 msgid "Extras"
 msgstr "Extras"
 
-#: gallery_assist.module:486
-msgid "This node muss be saved before you can add items to the gallery. Read more about in the <a href=\"@help_link\">@help</a>."
-msgstr ""
-"Dieser Artikel muss vorher gespeichert werden, bevor Bilder der "
-"Galerie hinzugefügt werden können. "
+#: gallery_assist.module:384
+msgid "Items"
+msgstr "Elemente"
 
-#: gallery_assist.module:486
+#: gallery_assist.module:385;1002
+msgid "Image"
+msgstr "Bild"
+
+#: gallery_assist.module:386
+msgid "Created"
+msgstr "Erstellt"
+
+#: gallery_assist.module:387;884
+msgid "Title"
+msgstr "Titel"
+
+#: gallery_assist.module:404
+msgid "Y/m/d"
+msgstr "d.m.Y"
+
+#: gallery_assist.module:531
+msgid "Gallery Assist user settings"
+msgstr "Galerie Assistent Benutzer-Konfiguration"
+
+#: gallery_assist.module:562
+msgid "This node must be saved before you can add items to the gallery. Read more about in the <a href=\"@help_link\">@help</a>."
+msgstr ""
+"Dieses Artikel muss,  bevor Bilder hochgeladen werden können, "
+"gespeichert werden. Mehr Information darüber in der <a "
+"href=\"@help_link\">@help</a>."
+
+#: gallery_assist.module:562
 msgid "help"
-msgstr ""
+msgstr "hilfe"
 
-#: gallery_assist.module:494
+#: gallery_assist.module:573
+msgid "Read the short help in case you are not secure by this settings."
+msgstr ""
+"Die Hilfe konsultieren falls unsicherheiten bei dieser Konfiguration "
+"auftreten."
+
+#: gallery_assist.module:578
 msgid "Settings to this Gallery"
 msgstr "Einstellungen für diese Galerie"
 
-#: gallery_assist.module:502;698
+#: gallery_assist.module:588
+msgid "Enable or disable comments for the items of this gallery"
+msgstr ""
+"Aktivieren oder Deaktivieren Kommentaren für die Elemente dieser "
+"Galerie"
+
+#: gallery_assist.module:609
+msgid "Extra layout settings"
+msgstr "Layout Extra-Konfiguration"
+
+#: gallery_assist.module:618
+msgid "Common"
+msgstr "Allgemein"
+
+#: gallery_assist.module:632
+msgid "Page container"
+msgstr "Container in die Seite"
+
+#: gallery_assist.module:639
+msgid "Preview"
+msgstr "Vorschau"
+
+#: gallery_assist.module:665
+msgid "Gallery container weight"
+msgstr "Galerie-Container Wichtung"
+
+#: gallery_assist.module:668
+msgid "Choose the gallery container position on this node."
+msgstr "Wählen die Wichtung des Gallery Containers für dieses Artikels."
+
+#: gallery_assist.module:673
+msgid "Show this gallery as"
+msgstr "Zeige diese Galerie als"
+
+#: gallery_assist.module:679
+msgid "Uncheck to hide the images titles."
+msgstr "Deaktivieren um die Bildertiteln zu verbergen."
+
+#: gallery_assist.module:679
+msgid "Check to display the image titles."
+msgstr "Aktivieren um die Bildertiteln zu zeigen."
+
+#: gallery_assist.module:682;2386
 msgid "Show titles"
 msgstr "Zeige Titel"
 
-#: gallery_assist.module:504
-msgid "Is this checkbox enabled, the image titles be displayed."
-msgstr "Wenn eingeschaltet, wird der Titel von Images angezeigt."
+#: gallery_assist.module:689
+msgid "Uncheck to desable the items shadow. (only win)"
+msgstr "Schatten-Effekt deaktivieren."
 
-#: gallery_assist.module:511
+#: gallery_assist.module:689
+msgid "Check to enable the items shadow. (only win)"
+msgstr "Schatten-Effekt aktivieren."
+
+#: gallery_assist.module:692
 msgid "Shadow"
 msgstr "Schatten (windows nur)"
 
-#: gallery_assist.module:513
-msgid "By enable display gallery_assist the item title as image capture."
-msgstr "Wenn aktiv wird der Titel jedes Galerie-Element gezeigt."
+#: gallery_assist.module:699
+msgid "Show in user profile"
+msgstr "Im Benutzerprofil zeigen"
 
-#: gallery_assist.module:518;902
-msgid "Weight"
-msgstr "Reihenfolge"
+#: gallery_assist.module:709
+msgid "Check to display this Gallery in the Site Galleries Block."
+msgstr "Aktivieren um diese Galerie im Benutzerkonto zu veröventlichen."
 
-#: gallery_assist.module:521
-msgid "Choose a weight value to decide witch position will be having your gallery container."
+#: gallery_assist.module:714
+msgid "Show in block"
+msgstr "Zeige in Block"
+
+#: gallery_assist.module:722;729
+msgid "Align"
+msgstr "Ausrichtung"
+
+#: gallery_assist.module:736;743
+msgid "Float"
+msgstr "Schweben"
+
+#: gallery_assist.module:751
+msgid "If checked Gallery Assist will not show the gallery container in the teaser view."
 msgstr ""
-"Wälen Sie einen Wert um zu entscheiden in welcher Position die "
-"Galeriebox erscheinen soll."
+"Diese Option aktivieren wenn der Galerie Container nicht im der "
+"Teaser-Ansicht erscheinen soll."
 
-#: gallery_assist.module:533
+#: gallery_assist.module:756
+msgid "Hide container in teaser"
+msgstr "Verberge Galerie Container im Teaser"
+
+#: gallery_assist.module:786
 msgid "Gallery: Add and edit gallery items"
-msgstr "Galerie: Adiere und editiere Galerieelemente"
+msgstr "Galerie: Addiere und editiere Galerieelemente"
 
-#: gallery_assist.module:539
+#: gallery_assist.module:792
 msgid "Click Update to upload a new file or to save your changes in this section."
 msgstr ""
 "Update klicken um selectierte Bilder hochzuladen oder um Änderungen "
 "in dieser Sektion zu speichern."
 
-#: gallery_assist.module:544
+#: gallery_assist.module:797
 msgid "If to many items you can use the <strong>Edit one item</strong> link displayed by the item view."
 msgstr ""
+"Bei zu viele Bilder wird empfohlen den <strong>Einzel "
+"editieren</strong> Link zu benutzenw welcher in der Bildansicht "
+"erscheint."
 
-#: gallery_assist.module:606
-msgid "Title"
-msgstr "Titel"
-
-#: gallery_assist.module:607
+#: gallery_assist.module:885
 msgid "Copyright"
 msgstr "Copyright"
 
-#: gallery_assist.module:608
+#: gallery_assist.module:886
 msgid "Caption"
 msgstr "Bilduntertitel"
 
-#: gallery_assist.module:624
+#: gallery_assist.module:898
+msgid "Permitted formats: jpg-, jpeg-, png-, gif-images and zip packages."
+msgstr ""
+"Zugelassene bilderformate: jpg-, jpeg-, png-, gif-Bilder and zip "
+"Packete. "
+
+#: gallery_assist.module:898
+msgid "Permitted formats: jpg-, jpeg-, png-, gif-images."
+msgstr "Zugelassene bilderformate: jpg-, jpeg-, png-, gif-Bilder. "
+
+#: gallery_assist.module:929
 msgid "Add new item"
 msgstr "Neues Element hizufügen"
 
-#: gallery_assist.module:632
+#: gallery_assist.module:938
+msgid "Enter here the copyright in case all pictures you will just upload and all should having the same copyright."
+msgstr ""
+"Copyright eingeben wenn alle hochzuladene Bilder den gleichen eintrag "
+"benötigen."
+
+#: gallery_assist.module:942
+msgid "Temp copyright"
+msgstr "Copyright (Hilffeld)"
+
+#: gallery_assist.module:952
+msgid "The maximum allowed number of uploads (@max-amount) was achieved."
+msgstr ""
+"Die maximal zulässige Anzahl von Uploads (@max-amount) wurde "
+"erreicht."
+
+#: gallery_assist.module:964
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: gallery_assist.module:637;1762
+#: gallery_assist.module:969;1391
 msgid "Please wait..."
 msgstr "Bitte warten..."
 
-#: gallery_assist.module:693
+#: gallery_assist.module:1001
+msgid "X"
+msgstr "X"
+
+#: gallery_assist.module:1003
+msgid "Image info"
+msgstr "Bild-Info"
+
+#: gallery_assist.module:1004
+msgid "Weight"
+msgstr "Reihenfolge"
+
+#: gallery_assist.module:1249
+msgid "The gallery places had to be recreated. Possible causes: The gallery feature was assigned to this content type after the creation of this article or the gallery-assist module has been reinstalled. In order to be able to upload pictures you have to save this node."
+msgstr ""
+"Die Galerie Ordners sollen erneut erzeugt werden. Mögliche Ursachen: "
+"Dieser Artikel existierte bereits als die Galerie Funktionalität dem "
+"Artikeltyp zugewiesen wurde oder Galerie Assistent würde erneut "
+"installiert. Um Bilder hochzuladen zu können, muss der Artikel "
+"gespeichert werden."
+
+#: gallery_assist.module:1281
+msgid "Back to @ptitle"
+msgstr "Zurück zu @ptitle"
+
+#: gallery_assist.module:1386
+msgid "Save and edit"
+msgstr "Speichern und editieren"
+
+#: gallery_assist.module:1472
+msgid "<span class=\"messages status\">Changes sucessfull saved.</span>"
+msgstr ""
+"<span class=\"messages status\">Änderungen wurden erfolgreich "
+"gespeichert.</span>"
+
+#: gallery_assist.module:1838
+msgid "A error is ocurred by Gallery Assist owner change"
+msgstr "Ein Fehler ist bei der Änderung des Authors aufgetreten"
+
+#: gallery_assist.module:1862
+msgid "<b>The new owner of this gallery is user: @uname</b>"
+msgstr "<b>Der neue Besitzer dieses Artikels ist Benutzer: @uname</b>"
+
+#: gallery_assist.module:1871
+msgid "<strong>A T T E N T I O N !</strong><br /> The user @uname haven't the needed permissions to create or edit this node type."
+msgstr ""
+"<strong>A C H T U N G !</strong><br /> Der Benutzer @uname besitzt "
+"nicht die erforderlichen Berechtigungen zum Erstellen oder Bearbeiten "
+"dieser Artikeltypes."
+
+#: gallery_assist.module:1952
+msgid "@title has been successful deleted."
+msgstr "@title wurde erfolgreich gelöscht."
+
+#: gallery_assist.module:2026
+msgid "Archive @zip_name but the module <a href=\"@upport_url\">Gallery Assist Upport</a> is not installed. The archiv would uploaded to the specific folder and is ready to import to a gallery by upport installing."
+msgstr ""
+
+#: gallery_assist.module:2381
 msgid "Hide titles"
-msgstr ""
+msgstr "Titeln verbergen"
 
-#: gallery_assist.module:743
-msgid "Submitted by !username on @datetime"
-msgstr "Verfasst von !username am @datetime"
-
-#: gallery_assist.module:746;1383
+#: gallery_assist.module:2578;2750
 msgid "D, m/d/Y - h:i"
-msgstr "D, m/d/Y - h:i"
+msgstr "D, d.m.Y - h:i"
 
-#: gallery_assist.module:760
-msgid "6919- Validation error, please try again. If this error persists, please contact the site administrator."
-msgstr ""
-"6919- Fehler beim Validieren, bitte wieder versuchen. Bei "
-"Fehlerwiederholung, den Administrator kontaktieren."
-
-#: gallery_assist.module:780
-msgid "Import finished. To see your changes <a href=\"@refresh_here\">refresh here<> or go to the <a href=\"@node_view\">node view</a>."
-msgstr ""
-
-#: gallery_assist.module:902
-msgid "Delete"
-msgstr "Löschen"
-
-#: gallery_assist.module:902
-msgid "Item"
-msgstr "Element"
-
-#: gallery_assist.module:902
-msgid "Image capture"
-msgstr "Bilduntertitel"
-
-#: gallery_assist.module:1423
+#: gallery_assist.module:2683
 msgid "Back to the gallery"
 msgstr "Zurück zur Galerie"
 
-#: gallery_assist.module:1427
+#: gallery_assist.module:2689;2693
 msgid "Edit this item"
 msgstr "Element editieren"
 
-#: gallery_assist.module:1487
+#: gallery_assist.module:2747
+msgid "Submitted by !username on @datetime"
+msgstr "Verfasst von !username am @datetime"
+
+#: gallery_assist.module:2846
+msgid "go to the first"
+msgstr "gehe zum ersten"
+
+#: gallery_assist.module:2849
+msgid "go to the previous"
+msgstr "gehe zum vorherigen"
+
+#: gallery_assist.module:2855
+msgid "go to the next"
+msgstr "gehe zum nächsten"
+
+#: gallery_assist.module:2858
+msgid "go to the last"
+msgstr "gehe zum letzten"
+
+#: gallery_assist.module:2860
 msgid "« first"
 msgstr "« erste Seite"
 
-#: gallery_assist.module:1491
+#: gallery_assist.module:2864
 msgid "last »"
 msgstr "letzte Seite »"
 
-#: gallery_assist.module:1672
-msgid "Back to"
-msgstr "Zurück zu"
+#: gallery_assist.module:3029;3030;3065;363
+msgid "Galleries"
+msgstr "Galerien"
 
-#: gallery_assist.module:1780
-msgid "My Galleries."
-msgstr "Meine Galerien"
-
-#: gallery_assist.module:1781;1809;1813
+#: gallery_assist.module:3034;3035;3069
 msgid "My Galleries"
 msgstr "Meine Galerien"
 
-#: gallery_assist.module:1789
-msgid "Gallery Assist block display type"
-msgstr "Galerie-Assistent Block-Ansichtstyp"
+#: gallery_assist.module:3039;3040;3073
+msgid "Gallery Block"
+msgstr "Galerieblock"
 
-#: gallery_assist.module:1796
-msgid "Choose a block display type"
-msgstr "Wählen Sie einen Block-Ansicht-Typ"
+#: gallery_assist.module:3132;3185
+msgid "more..."
+msgstr "mehr..."
 
-#: gallery_assist.module:105
+#: gallery_assist.module:3260
+msgid "Gallery Assist node ID's"
+msgstr "Gallery Assist Artikel ID's"
+
+#: gallery_assist.module:3270
+msgid "Gallery Assist block items format"
+msgstr "Galerie Assistent Miniaturenformat"
+
+#: gallery_assist.module:3282
+msgid "Item size"
+msgstr "Element-Größe"
+
+#: gallery_assist.module:3293
+msgid "Item margin"
+msgstr "Element-Aussenabstand"
+
+#: gallery_assist.module:3299
+msgid "Item padding"
+msgstr "Element-Innerabstand"
+
+#: gallery_assist.module:3306
+msgid "Item border"
+msgstr "Element-Rahmen"
+
+#: gallery_assist.module:3313
+msgid "Item border color #027AC6"
+msgstr "Element-Rahmen Farbe #027AC6 (Garland)"
+
+#: gallery_assist.module:3329
+msgid "Gallery Assist visible nodes"
+msgstr "Anzahl der anzuzeigende Galerien"
+
+#: gallery_assist.module:3647
+msgid "Gallery Assist Container"
+msgstr "Galerie Assistent Container"
+
+#: gallery_assist.module:3648
+msgid "Container with the Gallery Assist items."
+msgstr "DEr Container mit den Galerie Assistent Elemente"
+
+#: gallery_assist.module:3715
+msgid "The image ID"
+msgstr "Die bild ID"
+
+#: gallery_assist.module:3716
+msgid "The image name"
+msgstr "Der bildname"
+
+#: gallery_assist.module:137
 msgid "administer gallery_assist"
 msgstr "Gallery Assist administrieren"
 
-#: gallery_assist.module:106
+#: gallery_assist.module:138
 msgid "view gallery_assist content"
 msgstr "Galerie-Assistent Inhalt ansehen"
 
-#: gallery_assist.module:107
+#: gallery_assist.module:139
 msgid "create gallery_assist content"
 msgstr "Galerie-Assistent Inhalt erzeugen"
 
-#: gallery_assist.module:108
+#: gallery_assist.module:140
 msgid "delete own gallery_assist content"
 msgstr "Galerie-Assistent Inhalt löschen"
 
-#: gallery_assist.module:109
+#: gallery_assist.module:141
 msgid "delete any gallery_assist content"
 msgstr "Galerie-Assistent Inhalte löschen"
 
-#: gallery_assist.module:110
+#: gallery_assist.module:142
 msgid "edit own gallery_assist content"
 msgstr "Eigene Galerie-Assistent Inhalte editieren"
 
-#: gallery_assist.module:111
+#: gallery_assist.module:143
 msgid "edit any gallery_assist content"
 msgstr "Galerie-Assistent Inhalte editieren"
 
-#: gallery_assist.module:120
+#: gallery_assist.module:152
 msgid "gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:120
+#: gallery_assist.module:152
 msgid "gallery_assist"
 msgstr ""
 
-#: gallery_assist.module:122
+#: gallery_assist.module:154
 msgid "administer gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:123
+#: gallery_assist.module:155
 msgid "view gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:123;124;125;126;127;128
+#: gallery_assist.module:155;156;157;158;159;160
 msgid " content"
 msgstr " Inhalt"
 
-#: gallery_assist.module:124
+#: gallery_assist.module:156
 msgid "create gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:125
+#: gallery_assist.module:157
 msgid "delete own gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:126
+#: gallery_assist.module:158
 msgid "delete any gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:127
+#: gallery_assist.module:159
 msgid "edit own gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:128
+#: gallery_assist.module:160
 msgid "edit any gallery_assist_"
 msgstr ""
 
-#: gallery_assist.module:200
+#: gallery_assist.module:231
 msgid "Manage the gallery_assist asigments and customize the html output."
 msgstr ""
 "Administrieren die Zuweisung von Galerie-Funktionalität und Anpassung "
 "der HTML Ausgabe."
 
-#: gallery_assist.module:323
+#: gallery_assist.module:355
 msgid "Gallery Assist WARNING!"
 msgstr "Gallery Assist WARNUNG!"
 
-#: gallery_assist.install:269
+#: gallery_assist.install:270
 msgid "It was not possible to create the gallery_assist directory. The files directory must be writable. Clarify the write permissions for the files folder and reinstall the module Gallery Assist."
 msgstr ""
 "Das gallery_assist Verzeichniss konnte nicht erstellt werden. Das "
@@ -523,3 +1088,4 @@ msgstr "Drupal Inhaltstyp mit Galerie-Funktionalität."
 #: gallery_assist.info:0
 msgid "Media"
 msgstr "Media"
+

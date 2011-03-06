@@ -1,23 +1,37 @@
 <?php
 // $Id: gallery-assist-item.tpl.php,v 1.0 2009/11/19 16:11:12 jcmc Exp $
-/** 
- * Example of template for the gallery item container.
+
+/**
+ * @file
+ * Default theme implementation to display a Gallery Assist Item (image in this case).
+ *
+ * Available variables:
  * 
- * You can add extra css formating at here in the two folowing variants or through the tamplate.php
- * <style>
- *  <!-- your styles here -->
- * }
- * </style>
+ * - $item: An object with the necesary content to display the gallery item.
+ *   - contains
+ *     - $item->nid
+ *     - $item->nodetype
+ *     - $item->title
+ *     - $item->submitted
+ *     - $item->preview_size
+ *     - $item->img
+ *     - $item->ppath
+ *     - $item->ptitle
+ *     - $item->pdescription
+ *     - $item->copyright
+ *     - $item->top
+ *     - $item->pager
+ *     - $item->adm_link
+ *     - $item->download_path
+ *     - $item->link
+ *     - $item->links
+ *     - $item->extra_styles
  * 
- * <link type="text/css" rel="stylesheet" media="all" href="/path/to/gallery-assist-display.css" />
+ * @see theme_gallery_assist_item()
+ * @see gallery_assist_item_pager()
+ * @see gallery-assist-pager.tpl.php
  */
-  // Check or this template works and you can see them. When not please refresh your cache.
-  drupal_set_message(t('THE TEMPLATE "gallery-assist-item.tpl.php" WORKS. YOU CAN REMOVE THIS LINE', array()));
 ?>
-
-<?php dsm($item->download_path); ?>
-
-<a title="Download original image." href="<?php print $item->download_path; ?>">download</a>
 
 <div class="clear-block">
  
@@ -32,12 +46,12 @@
       <!-- Print the pager acord settings. -->
       <?php if ($item->top == 1 || $item->top == 3) { ?>
         
-        <div id="ga-pager" class="'. $item->nodetype .' ga-pager clear-block"><?php print $item->pager; ?></div>
+        <div id="ga-pager" class="<?php print $item->nodetype; ?> ga-pager clear-block"><?php print $item->pager; ?></div>
       
       <?php } ?>
 
       <!-- Print the item image. -->
-      <div id="ga-image-display" class="'. $item->nodetype .' ga-image-display" style="max-width:<?php print $item->preview_size; ?>px; max-height:<?php print $item->preview_size; ?>px;<?php print $item->extra_styles . $item->img_extra_styles; ?>">
+      <div id="ga-image-display" class="<?php print $item->nodetype; ?> ga-image-display" style="max-width:<?php print $item->preview_size; ?>px; max-height:<?php print $item->preview_size; ?>px;<?php print $item->extra_styles . $item->img_extra_styles; ?>">
         
         <?php print $item->img; ?>
       
@@ -62,6 +76,11 @@
      
      <!-- Gallery item description. You can use the if condition as by copyright. -->
      <div id="gallery-item-caption-text" class="<?php print $item->nodetype; ?> gallery-item-caption-text" style="max-width:<?php print $item->preview_size; ?>px;<?php print $item->extra_styles; ?>"><?php print $item->pdescription; ?></div>
+   
+     <!-- Download link. -->
+     <div id="gallery-item-download-link" class="<?php print $item->nodetype; ?> gallery-item-download-link" style="max-width:<?php print $item->preview_size; ?>px;<?php print $item->extra_styles; ?>">
+       <a title="Download original image." href="<?php print $item->download_path; ?>">download</a>
+     </div>
    
    </div>
  
