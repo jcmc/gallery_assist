@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.1.2.16 2010/04/06 00:48:47 jcmc Exp $
+// $Id: gallery_assist.admin.inc,v 1.26 2010/04/22 16:28:33 jcmc Exp $
 
 /**
  * @file
@@ -67,7 +67,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#title' => t('Thumbnails per row'),
     '#options' => drupal_map_assoc(array(t('unlimited'), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)),
     '#default_value' => $settings['items_per_row'],
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_rows_per_page'] = array(
@@ -75,7 +75,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#default_value' => $settings['rows_per_page'],
     '#type' => 'select',
     '#options' => drupal_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)),
-    '#suffix' => '</div>',
+    //'#suffix' => '</div>',
   );
   
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_t_items_per_row'] = array(
@@ -89,8 +89,8 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['thumbnails'] = array(
     '#type' => 'fieldset',
     '#title' => t('Thumbnails'),
-    '#prefix' => '<div class="ga-clear-both">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="ga-clear-both">',
+    //'#suffix' => '</div>',
     '#class' => 'ga-clear-both',
   );
 
@@ -99,7 +99,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#title' => t('Items margin'),
     '#options' => drupal_map_assoc(array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)),
     '#default_value' => $settings['item_margin'],
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['thumbnails']['gallery_assist_'. $type .'_item_padding'] = array(
@@ -107,7 +107,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#title' => t('Items padding'),
     '#options' => drupal_map_assoc(array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)),
     '#default_value' => $settings['item_padding'],
-    '#suffix' => '</div>',
+    ////'#suffix' => '</div>',
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['thumbnails']['gallery_assist_'. $type .'_item_border'] = array(
@@ -179,22 +179,22 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['teaser'] = array(
     '#type' => 'fieldset',
     '#title' => t('Teaser container'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
+    ////'#suffix' => '</div>',
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['page'] = array(
     '#type' => 'fieldset',
     '#title' => t('Page container'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
+    ////'#suffix' => '</div>',
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['nodes'] = array(
     '#type' => 'fieldset',
     '#title' => t('Node settings defaults'),
-    '#prefix' => '<div style="clear:both;" class="clear-block">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div style="clear:both;" class="clear-block">',
+    ////'#suffix' => '</div>',
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['teaser']['gallery_assist_'. $type .'_ga_align'] = array(
@@ -267,7 +267,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#type' => 'select',
     '#options' => array('0' => t('Numeric'), '1' => t('Icons')),
     '#description' => $desc['pager']['type'],
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
   );
 
   $options['pager']['layout'] = gallery_assist_pager_options();
@@ -287,7 +287,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#type' => 'select',
     '#options' => array('top' => t('top'), 'bottom' => t('bottom'), 'both' => t('both')),
     '#description' => $desc['pager']['position'],
-    '#suffix' => '</div>',
+    ////'#suffix' => '</div>',
   );
 
   $desc['pager']['visibles'] = t('Choose how many items should having the GA-pager on this node type.');
@@ -353,7 +353,7 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
     '#title' => t('Display the download link'),
     '#default_value' => $settings['show_download_link'],
     '#description' => t('If cheked the download link is displayed. The value can be setted for each node and for each gallery item.'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
   );
 
   $h_li = array(
@@ -690,8 +690,8 @@ function _gallery_assist_sizes_settings_form($type, $settings = array()) {
     '#title' => t('Upload'),
     //'#collapsible' => TRUE,
     //'#collapsed' => TRUE,
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
+    ////'#suffix' => '</div>',
   );
 
   $form['gallery_assist_'. $type .'_sizes']['gallery_assist_'. $type .'_sizes']['gallery_assist_'. $type .'_upload']['gallery_assist_'. $type .'_upload_thm'] = array(
@@ -714,8 +714,8 @@ function _gallery_assist_sizes_settings_form($type, $settings = array()) {
     '#title' => t('Display'),
     //'#collapsible' => TRUE,
     //'#collapsed' => TRUE,
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
+    ////'#suffix' => '</div>',
   );
 
   if ($settings['thumbnail_size'] == '' && $settings['thumbnail_size'] == 0) {
@@ -920,8 +920,8 @@ function _gallery_assist_settings_nodes($settings, $type) {
     '#title' => t('Field to order'),
     '#default_value' => $settings['ga_db_order_field'],
     '#options' => array('a.weight' => 'Weight', 'f.timestamp' => 'Upload date', 'a.filename' => 'File name', 'tp.ptitle' => 'Image title'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
+    ////'#suffix' => '</div>',
   );
 
   $form['load_modi']['gallery_assist_'. $type .'_ga_db_order'] = array(
@@ -929,14 +929,14 @@ function _gallery_assist_settings_nodes($settings, $type) {
     '#title' => t('Order type'),
     '#default_value' => $settings['ga_db_order'],
     '#options' => array('DESC' => 'Descending', 'ASC' => 'Ascending'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-half">',
+    ////'#suffix' => '</div>',
   );
 
   $form['common'] = array(
     '#type' => 'fieldset',
     '#title' => t('Common'),
-    '#prefix' => '<div class="gallery-assist-settings">',
+    //'#prefix' => '<div class="gallery-assist-settings">',
   );
 
   $form['common']['prefix'] = array(
@@ -1026,24 +1026,24 @@ function _gallery_assist_settings_nodes($settings, $type) {
   $form['layout']['teaser'] = array(
     '#type' => 'fieldset',
     '#title' => t('Teaser container'),
-    '#prefix' => '<div class="gallery-assist-settings-left">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left">',
+    ////'#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the teaser view.'),
   );
 
   $form['layout']['page'] = array(
     '#type' => 'fieldset',
     '#title' => t('Page container'),
-    '#prefix' => '<div class="gallery-assist-settings-left">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left">',
+    ////'#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the page view.'),
   );
 
   $form['layout']['preview'] = array(
     '#type' => 'fieldset',
     '#title' => t('Preview'),
-    '#prefix' => '<div class="gallery-assist-settings-left">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left">',
+    ////'#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the image preview.'),
   );
 
@@ -1064,8 +1064,8 @@ function _gallery_assist_settings_nodes($settings, $type) {
     '#type' => 'checkbox',
     '#title' => t('Display the download link'),
     '#default_value' => $settings['show_download_link'],
-    '#prefix' => '<div class="gallery-assist-settings-left-30">',
-    '#suffix' => '</div>',
+    //'#prefix' => '<div class="gallery-assist-settings-left-30">',
+    ////'#suffix' => '</div>',
   );
 
   $form['layout']['preview']['gallery_assist_'. $type .'_show_download_link_old'] = array(

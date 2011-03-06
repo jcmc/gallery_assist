@@ -1,4 +1,4 @@
-/* $Id: gallery_assist.css,v 1.1.2.12 2010/04/06 00:48:48 jcmc Exp $ */
+/* $Id: gallery_assist.css,v 1.22 2010/04/22 16:28:33 jcmc Exp $ */
 
 #gallery-assist-users-help {
   margin: 0 20px;
@@ -228,6 +228,9 @@ div#ga-pager-box  div.pager li a {color:#fff999;}
 .ga-item-edit-link:hover {
   opacity:0.9;
 }
+
+
+
 .ga-item-edit-link a {
   font-style: italic;
   font-size: 10px;
@@ -247,19 +250,60 @@ div#ga-pager-box  div.pager li a {color:#fff999;}
 .ga-pager-box pager-item {
   display: none;
 }
-
 .ga-form-weight {
   width = 1px;
 }
-
 .ga-align-left {
   text-align:left;
 }
-
 .ga-align-center {
   text-align:center;
 }
-
 .ga-align-right {
   text-align:right;
 }
+
+div.ga-back-link {
+  margin-right: 5px;
+}
+div.ga-edit-item-link {
+  
+}
+div.nav-links {
+  background: transparent;
+}
+/**
+ * Comment out to use icons for the back and edit one links.
+ */
+div.ga-edit-item-link {
+  background:transparent url(../images/icon-set.png) no-repeat scroll 0 0;
+  background-position: -16px 0;
+  height:16px;
+  width:16px;
+  overflow:hidden;
+}
+div.ga-edit-item-link:hover {
+  background:transparent url(../images/css-sprites.png) no-repeat scroll 0 0;
+  background-position: -16px 0;
+}
+div.ga-edit-item-link a {
+  background: transparent;
+  color:transparent;
+}
+div.ga-back-link {
+  background:transparent url(../images/icon-set.png) repeat scroll 0 0;
+  background-position: -16px -16px;
+  float:left;
+  height:16px;
+  overflow:hidden;
+  width:16px;
+}
+div.ga-back-link:hover {
+  background:transparent url(../images/css-sprites.png) repeat scroll 0 0;
+  background-position: -16px -16px;
+}
+div.ga-back-link a {
+  background: transparent;
+  color:transparent;
+}
+

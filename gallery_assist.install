@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.1.2.14 2010/04/13 14:51:13 jcmc Exp $
+// $Id: gallery_assist.install,v 1.36 2010/04/22 16:28:33 jcmc Exp $
 
 /**
  * @file
@@ -546,7 +546,7 @@ function gallery_assist_update_3() {
 
   if (count($my_data) > 1) {
     foreach ($my_data as $k) {
-      $show_in_homepage_block = $k->show_in_homepage_block;
+      $show_in_homepage_block = isset($k->show_in_homepage_block) && $k->show_in_homepage_block ? 1 : 0;
       $data = $k->data;
       $gref = $k->gref;
       update_sql("UPDATE {gallery_assist} set show_in_homepage_block = $show_in_homepage_block, data = '$data' WHERE gref = $gref");
@@ -558,7 +558,7 @@ function gallery_assist_update_3() {
     }
   }
 
-  drupal_set_message('<p><strong>The feature "cover" is new. At now you or the registered users of your homepage (which Gallery Assist permitions) can choose a image as cover for each gallery.</strong></p>');
+  drupal_set_message('<p><strong>The feature "cover" is new. At now you or the registered users of your homepage (with Gallery Assist permissions) can choose a image as cover for each gallery.</strong></p>');
 
   db_drop_field($ret, 'gallery_assist', 'shadow');
 
@@ -615,7 +615,7 @@ function gallery_assist_update_3() {
       $check[$v->type]['show_download_link'] = $check['default']['show_download_link'];
       $check[$v->type]['item_effect'] = $check['default']['item_effect'];
       $check[$v->type]['max_items'] = $check['default']['max_items'];
-      $check[$v->type]['max_form_items'] = $check['max_form_items'];
+      $check[$v->type]['max_form_items'] = $check['default']['max_form_items'];
       $check[$v->type]['public_status'] = $check['default']['public_status'];
       $check[$v->type]['admin_public_status'] = $check['default']['admin_public_status'];
       $check[$v->type]['validate_upload'] = $new_key;

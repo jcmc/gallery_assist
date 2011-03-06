@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.1.2.14 2010/03/29 15:46:27 jcmc Exp $
+// $Id: gallery_assist_display.inc,v 1.31 2010/04/22 16:28:33 jcmc Exp $
 
 /**
  * @file

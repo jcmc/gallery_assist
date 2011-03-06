@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_node_settings.inc,v 1.1.2.4 2010/04/06 00:48:48 jcmc Exp $
+// $Id: gallery_assist_node_settings.inc,v 1.8 2010/04/22 16:28:33 jcmc Exp $
 
 /**
  * @file
@@ -19,8 +19,8 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#title' => t('Field to order'),
     '#default_value' => $node->gallconf[$node->type]['ga_db_order_field'],
     '#options' => array('a.weight' => 'Weight', 'f.timestamp' => 'Upload date', 'a.filename' => 'File name', 'tp.ptitle' => 'Image title'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+   // '#prefix' => '<div class="gallery-assist-settings-left-half">',
+   // '#suffix' => '</div>',
   );
 
   $form['load_modi']['ga_db_order'] = array(
@@ -28,14 +28,14 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#title' => t('Order type'),
     '#default_value' => $node->gallconf[$node->type]['ga_db_order'],
     '#options' => array('DESC' => 'Descending', 'ASC' => 'Ascending'),
-    '#prefix' => '<div class="gallery-assist-settings-left-half">',
-    '#suffix' => '</div>',
+   // '#prefix' => '<div class="gallery-assist-settings-left-half">',
+   // '#suffix' => '</div>',
   );
 
   $form['common'] = array(
     '#type' => 'fieldset',
     '#title' => t('Common'),
-    '#prefix' => '<div class="gallery-assist-settings">',
+   // '#prefix' => '<div class="gallery-assist-settings">',
     '#access' => $data['common_settings_allowed'],
   );
 
@@ -147,24 +147,24 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
   $form['layout']['teaser'] = array(
     '#type' => 'fieldset',
     '#title' => t('Teaser container'),
-    '#prefix' => '<div class="gallery-assist-settings-left">',
-    '#suffix' => '</div>',
+   // '#prefix' => '<div class="gallery-assist-settings-left">',
+   // '#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the teaser view.'),
   );
 
   $form['layout']['page'] = array(
     '#type' => 'fieldset',
     '#title' => t('Page container'),
-    '#prefix' => '<div class="gallery-assist-settings-left">',
-    '#suffix' => '</div>',
+   // '#prefix' => '<div class="gallery-assist-settings-left">',
+   // '#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the page view.'),
   );
 
   $form['layout']['preview'] = array(
     '#type' => 'fieldset',
     '#title' => t('Preview'),
-    '#prefix' => '<div class="gallery-assist-settings-left">',
-    '#suffix' => '</div>',
+   // '#prefix' => '<div class="gallery-assist-settings-left">',
+   // '#suffix' => '</div>',
     '#description' => t('Settings of the gallery container in the image preview.'),
     '#access' => $data['display_download_link_allowed'],
   );
@@ -215,8 +215,8 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#type' => 'checkbox',
     '#title' => t('Display the download link'),
     '#default_value' => $node->gallconf[$node->type]['show_download_link'],
-    '#prefix' => '<div class="gallery-assist-settings-left-30">',
-    '#suffix' => '</div>',
+   // '#prefix' => '<div class="gallery-assist-settings-left-30">',
+   // '#suffix' => '</div>',
     '#access' => $data['display_download_link_allowed'],
     '#disabled' => empty($node->gallconf[$node->type]['show_download_link']) ? TRUE : FALSE,
   );
