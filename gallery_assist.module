@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.module,v 1.1 2009/10/11 00:20:08 jcmc Exp $
+// $Id: gallery_assist.module,v 1.6 2009/10/13 19:37:27 jcmc Exp $
 
 /**
  * @file
@@ -483,7 +483,7 @@ function gallery_assist_form_alter(&$form, $form_state, $form_id) {
   $hepl_path_tail = $node->type == 'gallery_assist' ? '' : '_'. $node->type;
   if (arg(1) == 'add' && variable_get('gallery_assist_'. $form['#node']->type, 0) == 1) {
     global $base_url;
-    drupal_set_message(t('This node muss be saved before you can add items to the gallery. Read more about in the <a href="@help_link">@help</a>.', array('@help' => t('help'), '@help_link' => url($base_url .'/gallery_assist'. $hepl_path_tail .'/help#ga_why'))));
+    drupal_set_message(t('This node must be saved before you can add items to the gallery. Read more about in the <a href="@help_link">@help</a>.', array('@help' => t('help'), '@help_link' => url($base_url .'/gallery_assist'. $hepl_path_tail .'/help#ga_why'))));
   }
 
   if ($node->nid && variable_get('gallery_assist_'. $node->type, 0) == 1) {
@@ -775,7 +775,7 @@ function gallery_assist_import_js() {
   }
 
   $node->gallery_assist_import = $paths;
-  $ready = gallery_assist_import_save(&$node);
+  $ready = gallery_assist_import_save($node);
 
   $output = t('Import finished. To see your changes <a href="@refresh_here">refresh here<> or go to the <a href="@node_view">node view</a>.', array(
     '@refresh_here' => url('node/'. $node->nid .'/edit'),
