@@ -1,5 +1,4 @@
 <?php
-// $Id: gallery_assist_ui.install,v 1.1.2.1 2011/01/11 08:46:40 jcmc Exp $ 
 
 /**
  * @file 
@@ -9,12 +8,15 @@
  * Implementation of hook_install() 
  */
 function gallery_assist_ui_install() {
-
+  $ga_ui_settings = array(
+    'gallery_assist' => 1
+  );
+  variable_set("gallery_assist_ui_settings", $ga_ui_settings);
 }
 
 /**
  * Implementation of hook_uninstall() 
  */
 function gallery_assist_ui_uninstall() {
-
+  variable_del("gallery_assist_ui_settings");
 }

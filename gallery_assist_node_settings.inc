@@ -1,5 +1,4 @@
 <?php
-// $Id: gallery_assist_node_settings.inc,v 1.1.2.19 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file

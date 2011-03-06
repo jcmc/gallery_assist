@@ -1,13 +1,13 @@
-; $Id: gallery_assist_ui.info,v 1.1.2.3 2011/01/12 10:22:07 jcmc Exp $ 
 name = Gallery Assist User Interface
 description = User Interface for the Gallery Assist module.
 package = Gallery Assist
 core = 6.x
+dependencies[] = gallery_assist
 dependencies[] = jquery_ui
 
-; Information added by drupal.org packaging script on 2011-01-12
-version = "6.x-1.19-beta5"
+; Information added by drupal.org packaging script on 2011-02-25
+version = "6.x-1.x-dev"
 core = "6.x"
 project = "gallery_assist"
-datestamp = "1294827963"
+datestamp = "1298619317"
 

@@ -1,4 +1,3 @@
-// $Id$
 
 Gallery Assist template examples
 --------------------------------

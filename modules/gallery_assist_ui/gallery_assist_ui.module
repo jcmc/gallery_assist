@@ -1,5 +1,4 @@
 <?php
-// $Id: gallery_assist_ui.module,v 1.1.2.1 2011/01/11 08:46:40 jcmc Exp $ 
 
 /**
  * @file 
@@ -17,7 +16,8 @@ function gallery_assist_ui_help($path, $arg) {
  */
 function gallery_assist_ui_perm() {
   $perm = array(
-    'access sort images tab'
+    'access sort images tab',
+    'access overwrite node settings'
   );
 
   return $perm;
@@ -30,26 +30,10 @@ function gallery_assist_ui_menu() {
   $items = array();
 
   // Gallery as secundary tab from edit.
-  $items['node/%node/edit/node'] = array(
-    'title' => 'Article',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 0,
-  );
-
   $items['node/%node/edit/ga_sort'] = array(
     'title' => 'Sort images',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('gallery_assist_ui_sorting_items', 1),
-    'access callback' => 'gallery_assist_ui_sort_check_access',
-    'access arguments' => array(3, 1),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2
-  );
-
-  $items['node/%node/edit/ga_sort/no_jquery'] = array(
-    'title' => 'Sort images',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('gallery_assist_ui_sorting_items_standard', 1),
     'access callback' => 'gallery_assist_ui_sort_check_access',
     'access arguments' => array(3, 1),
     'type' => MENU_LOCAL_TASK,
@@ -64,7 +48,165 @@ function gallery_assist_ui_menu() {
     'weight' => 3
   );
 
+  $items['node/%node/edit/ga_settings'] = array(
+    'title' => 'Gallery settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gallery_assist_ui_gallery_settings', 1),
+    'access callback' => 'gallery_assist_ui_check_access',
+    'access arguments' => array(1, 'edit'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5
+  );
+
+  $items['node/%node/edit/ga_items'] = array(
+    'title' => 'Add & edit images',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gallery_assist_ui_ga_items_form', 1),
+    'access callback' => 'gallery_assist_ui_check_access',
+    'access arguments' => array(1, 'edit'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+
   return $items;
+}
+
+function gallery_assist_ui_ga_items_form($form_state, $node) {
+  $form = array();
+  $form['#node'] = $node;
+  $form += gallery_assist_form_help_links($node);
+  $data = variable_get('gallery_assist_'. $node->type .'_data', FALSE);
+
+  gallery_assist_add_js('gallery_assist');
+
+  if (arg(2) == 'edit') {
+    if (isset($_GET['page']) && $_GET['page'] > 0) {
+      $collapsed = FALSE;
+    }
+    else {
+      $collapsed = count($node->gallitems) > 5 ? TRUE : FALSE;
+    }
+  }
+
+  $node->check_all_links = count($node->gallitems) > 1 ? t('<span class="ga-check-all description">@check_all</span> | <span class="ga-uncheck-all description">@uncheck_all</span>', array('@check_all' => t('check all'), '@uncheck_all' => t('uncheck all'))) : '';
+  // Upload process form section.
+  $form['gallery_assist_item'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Gallery Assist (GA): Add and edit items') .' ('. $node->gallconf[$node->type]['ga_counter'] .')',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#prefix' => '<div class="gallery_assist_list">',
+    '#suffix' => '</div>',
+    '#weight' => 1,
+    '#description' => t('Click Update to upload a new file or to save your changes in this section.<br />') . $node->check_all_links
+  );
+
+  $form['ref'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->ref ? $node->ref : $node->nid,
+  );
+
+  $form['has_cover'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->has_cover,
+  );
+
+  // Wrapper for fieldset contents (used by ahah.js).
+  $form['gallery_assist_item']['wrapper'] = array(
+    '#prefix' => '<div id="gallery-assist-list-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  // It sends the current user as a reference, if administrators make
+  // changes in the author information of the node.
+  $form['gallery_assist_item']['current_owner'] = array(
+    '#type' => 'value',
+    '#value' => $node->uid,
+  );
+
+  $form['gallery_assist_item']['wrapper'] += _gallery_assist_form($node);
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+  $form['#submit'][] = 'gallery_assist_form_submit';
+
+  // Add a checkbox to lock or unlock the gallery.
+  $form['ga_lock'] = array(
+    '#type' => 'fieldset',
+    '#access' => $node->gallconf[$node->type]['ga_counter'] > 100 ? TRUE : FALSE,
+    '#weight' => 3000
+  );
+  $form['ga_lock']['gallery_assist_lockked'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('One time lock'),
+    '#default_value' => FALSE,
+    '#description' => t('Enable this parameter to avoid over head or long wait time in case your changes fields that are not part of the gallery. By enabled is all the data from gallery items excluded from the save process.')
+  );
+
+  if (isset($form['gallery_assist_item']['wrapper']['new'])) {
+    foreach ($form['gallery_assist_item']['wrapper']['new'] as $k => $v) {
+      if (preg_match("/pictures/", $k) && $v['#type'] == 'file' && user_access('allow upport zip upload')) {
+        $form['gallery_assist_item']['wrapper']['new'][$k]['#description'] .= '<br />Additional permited formats: zip.';
+      }
+    }
+  }
+
+  if (function_exists('gallery_assist_upport_menu')) {
+    $node->gall_scanns = _gallery_assist_scann_process(&$node);
+    $form += _gallery_assist_upport_form_edit_node($node, $form, "{$node->type}_node_form");
+  }
+
+  return $form;
+}
+
+function gallery_assist_ui_check_access($node, $op) {
+  $ga_ui_settings = variable_get("gallery_assist_ui_settings", array());
+  if (gallery_assist_check_access($node, $op) && $ga_ui_settings[$node->type] == 1) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+function gallery_assist_ui_gallery_settings(&$form_state, $node) {
+  $form = array();
+  $form += gallery_assist_form_help_links($node);
+  $data = variable_get('gallery_assist_'. $node->type .'_data', FALSE);
+
+  $form['gallery_assist_settings'] = array(
+    '#type' => 'fieldset',
+//        '#access' => (user_access('create gallery assist content') || user_access('create gallery assist '. $node->type .' content')) && gallery_assist_check_access($node, 'edit') ? TRUE : FALSE,
+//        '#access' => gallery_assist_check_access($node, 'edit'),
+//    '#title' => t('Gallery Assist (GA) settings'),
+    '#collapsible' => FALSE,
+    '#collapsed' => TRUE
+  );
+
+  module_load_include('inc', 'gallery_assist', 'gallery_assist_node_settings');
+  $form['gallery_assist_settings']['wrapper'] = gallery_assist_settings_tothis_node($node, $data);
+  $form['gallery_assist_settings']['wrapper']['load_modi']['#collapsed'] = FALSE;
+  $form['gallery_assist_settings']['wrapper']['common']['#collapsed'] = FALSE;
+  $form['gallery_assist_settings']['wrapper']['layout']['#collapsed'] = FALSE;
+  $form['gallery_assist_settings']['wrapper']['localize_settings']['#collapsed'] = FALSE;
+
+  $form['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#name' => 'save',
+    '#submit' => array('gallery_assist_ui_node_settings_submit')
+  );
+
+  return $form;
+}
+
+function gallery_assist_ui_node_settings_submit(&$form, $form_state) {
+  $node = node_load(arg(1));
+
+  foreach ($form_state['values'] as $param => $value) {
+    $node->$param = $value;
+  }
+
+  gallery_assist_update($node);
+  drupal_set_message(t('Gallery settings from @title has been updated.', array('@title', $node->title)));
 }
 
 function gallery_assist_ui_sort_check_access($task, $node) {
@@ -91,6 +233,8 @@ function gallery_assist_ui_sort_check_access($task, $node) {
  */
 function gallery_assist_ui_sorting_items($form_state, $node) {
   $form = array();
+  $form += gallery_assist_form_help_links($node);
+
   $conf =  $node->gallconf[$node->type];
 
   $form['sort_container'] = array(
@@ -99,19 +243,19 @@ function gallery_assist_ui_sorting_items($form_state, $node) {
 
   // Build links.
   if (isset($_GET['unlimited']) && $_GET['unlimited'] > 0) {
-    $title = 'limited';
+    $title = 'paged';
     $attributes = array(
       'attributes' => array(
         'title' => 'Use pager in case of great number of images.',
         'class' => 'button'
       )
     );
-    $value = '<strong>unlimited</strong> | '. l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
-    $links[] = '<strong>unlimited</strong>';
+    $value = '<strong>all</strong> | '. l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
+    $links[] = '<strong>all</strong>';
     $links[] = l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
   }
   else {
-    $title = 'unlimited';
+    $title = 'all';
     $attributes = array(
       'query' => array(
         'unlimited' => 1
@@ -120,51 +264,83 @@ function gallery_assist_ui_sorting_items($form_state, $node) {
         'title' => 'Load all images.'
       )
     );
-    $value = l($title, "node/{$node->nid}/edit/ga_sort", $attributes) .' | <strong>limited</strong>';
+    $value = l($title, "node/{$node->nid}/edit/ga_sort", $attributes) .' | <strong>paged</strong>';
     $links[] = l($title, "node/{$node->nid}/edit/ga_sort", $attributes);
-    $links[] = '<strong>limited</strong>';
+    $links[] = '<strong>paged</strong>';
   }
-  $links[] = '<button onclick="alert($(\'DIV#sort-items\').sortable(\'serialize\'))" type="button">Serialize!</button>';
+//  $links[] = '<button onclick="alert($(\'DIV#sort-items\').sortable(\'serialize\'))" type="button">Serialize!</button>';
+
+  $attributes['query']['unlimited'] = 1;
+  $links[] = l('no JQuery', "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
 
   $form['sort_container']['links'] = array(
     '#type' => 'markup',
     '#value' => implode(' | ', $links)
   );
 
-  // Build the sort container.
-  $myitem = array();
-  foreach ($node->gallitems as $pid => $item) {
-    $item->my_img_attr = array(
-      'style' => 'width:50px;height:50px;'
+  // Build the sort container if images.
+  if (count($node->gallitems) > 0) {
+    $myitem = array();
+    foreach ($node->gallitems as $pid => $item) {
+      $item->my_img_attr = array(
+        'style' => 'width:50px;height:50px;'
+      );
+      $page = isset($_GET['page']) ? $_GET['page'] : 0;
+      $unlimited = isset($_GET['unlimited']) ? $_GET['unlimited'] : 0;
+      $myitem_attr = array(
+        'id' => "{$node->nid}-{$page}-{$unlimited}-sort_item_{$pid}",
+        'class' => 'ga-sort-item-image',
+        'style' => 'background-image: none;'
+      );
+      $myitem[] = '<div '. drupal_attributes($myitem_attr) .'>' .gallery_assist_prepare_thms($item, $node->gallconf[$node->type]) .'</div>';
+    }
+
+    $attributes = array(
+      'id' => 'sort-items'
     );
-    $page = isset($_GET['page']) ? $_GET['page'] : 0;
-    $unlimited = isset($_GET['unlimited']) ? $_GET['unlimited'] : 0;
-    $myitem_attr = array(
-      'id' => "{$node->nid}-{$page}-{$unlimited}-sort_item_{$pid}",
-      'class' => 'ga-sort-item-image',
-      'style' => 'background-image: none;'
-    );
-    $myitem[] = '<div '. drupal_attributes($myitem_attr) .'>' .gallery_assist_prepare_thms($item, $node->gallconf[$node->type]) .'</div>';
+    $form['sort_container']['#suffix'] = '<div '. drupal_attributes($attributes) .'>' .implode("\n", $myitem) .'</div>';
+
+    $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
+//    $form['sort_container']['#suffix'] .= !isset($_GET['unlimited']) && !isset($_GET['page']) ? theme('pager', NULL, $pager_limit, 0, NULL, 5) : '';
+
+    if (function_exists('jquery_update_get_version')) {
+      $jq_v = jquery_update_get_version();
+      $jq_ui_v = jquery_ui_get_version();
+
+      if ($jq_v == '1.3.2' && $jq_ui_v != '1.7.3') {
+//        $form['sort_container']['links']['#value'] .= t('<div>You are using JQuery version @qt and JQuery UI @qtui which are not 100% compatible.<br />
+//          Update to <a href="@link">JQuery-UI 1.7.3</a>. <br />
+//          Rename the folder "development-bundle" to "jquery.ui" and place it in the folder jquery_ui.</div>', array(
+//          '@qt' => $jq_v,
+//          '@qtui' => $jq_ui_v,
+//          '@link' => url('http://jqueryui.com/download')
+//        ));
+        drupal_set_message(t('<div>You are using JQuery version @qt and JQuery UI @qtui which are not 100% compatible.<br />
+          Update to <a href="@link">JQuery-UI 1.7.3</a>. <br />
+          Rename the folder "development-bundle" to "jquery.ui" and place it in the folder jquery_ui.</div>', array(
+          '@qt' => $jq_v,
+          '@qtui' => $jq_ui_v,
+          '@link' => url('http://jqueryui.com/download')
+        )), 'warning');
+      }
+    }
+
+    $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
+    $form['sort_container']['#prefix'] = theme('pager', NULL, $pager_limit, 0, NULL, 5);
+    $form['#suffix'] = theme('pager', NULL, $pager_limit, 0, NULL, 5);
+
+    // Include css and js files.
+    global $base_url, $base_path;
+    drupal_add_css(drupal_get_path('module', 'gallery_assist_ui') .'/css/gallery_assist_ui.css');
+    jquery_ui_add(array('ui.draggable', 'ui.droppable', 'ui.sortable'));
+    drupal_add_js(array('ga_settings' => array('base_url' => $base_url)), 'setting');
+    drupal_add_js(drupal_get_path('module', 'gallery_assist_ui') .'/js/gallery_assist_ui.js');
   }
-
-  $attributes = array(
-    'id' => 'sort-items'
-  );
-  $form['sort_container']['#suffix'] = '<div '. drupal_attributes($attributes) .'>' .implode("\n", $myitem) .'</div>';
-
-  $pager_limit = variable_get('gallery_assist_editform_pager_limit', 25);
-  $form['sort_container']['#suffix'] .= theme('pager', NULL, $pager_limit, 0, NULL, 5);
-
-  // Include css and js files.
-  global $base_url, $base_path;
-  drupal_add_css(drupal_get_path('module', 'gallery_assist_ui') .'/css/gallery_assist_ui.css');
-  jquery_ui_add(array('ui.draggable', 'ui.droppable', 'ui.sortable'));
-  drupal_add_js(array('ga_settings' => array('base_url' => $base_url)), 'setting');
-  drupal_add_js(drupal_get_path('module', 'gallery_assist_ui') .'/js/gallery_assist_ui.js');
 
   return $form;
 }
 
+/*
 function gallery_assist_ui_sorting_items_standard($form_state, $node) {
   $form = array();
   $conf =  $node->gallconf[$node->type];
@@ -179,20 +355,22 @@ function gallery_assist_ui_sorting_items_standard($form_state, $node) {
   $form['gallery_items']['#tree'] = TRUE;
 
   // Build links.
+  $_GET['unlimited'] = 1;
   if (isset($_GET['unlimited']) && $_GET['unlimited'] > 0) {
-    $title = 'limited';
+    $title = 'paged';
     $attributes = array(
       'attributes' => array(
         'title' => 'Use pager in case of great number of images.',
         'class' => 'button'
       )
     );
-    $value = '<strong>unlimited</strong> | '. l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
-    $links[] = '<strong>unlimited</strong>';
-    $links[] = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
+    $value = '<strong>all</strong> | '. l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
+    $links[] = '<strong>all</strong>';
+//    $links[] = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
+    $links[] = '<strike>paged</strike>';
   }
   else {
-    $title = 'unlimited';
+    $title = 'all';
     $attributes = array(
       'query' => array(
         'unlimited' => 1
@@ -201,11 +379,12 @@ function gallery_assist_ui_sorting_items_standard($form_state, $node) {
         'title' => 'Load all images.'
       )
     );
-    $value = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes) .' | <strong>limited</strong>';
+    $value = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes) .' | <strong>paged</strong>';
     $links[] = l($title, "node/{$node->nid}/edit/ga_sort/no_jquery", $attributes);
-    $links[] = '<strong>limited</strong>';
+    $links[] = '<strong>paged</strong>';
   }
-  $links[] = '<button onclick="alert($(\'DIV#sort-items\').sortable(\'serialize\'))" type="button">Serialize!</button>';
+//  $links[] = '<button onclick="alert($(\'DIV#sort-items\').sortable(\'serialize\'))" type="button">Serialize!</button>';
+  $links[] = l('JQuery', "node/{$node->nid}/edit/ga_sort", $attributes);
 
   $form['sort_container_top'] = array(
     '#type' => 'fieldset',
@@ -282,6 +461,7 @@ function theme_gallery_assist_ui_sort_form_current($form) {
 
   return $output;
 }
+*/
 
 /**
  * Implementation of hook_theme().
@@ -357,4 +537,123 @@ function gallery_assist_ui_block($op='list', $delta=0, $edit=array()) {
     case 'save':
 
   }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function gallery_assist_ui_form_alter($form, $form_state, $form_id) {
+  if ($form_id == 'gallery_assist_settings') {
+    $ga_ui_settings = variable_get("gallery_assist_ui_settings", array());
+    if ($ga_ui_settings[$node->type] == 1) {
+      $type = arg(4);
+      $type = empty($type) ? 'gallery_assist' : $type;
+
+      $form["gallery_assist_{$type}_settings"][$type]['gallery_assist_ui_rebuild_operation'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Assignment wide operation'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => -20
+      );
+      $form["gallery_assist_{$type}_settings"][$type]['gallery_assist_ui_rebuild_operation']['gallery_assist_ui_rebuild_operation_parameter'] = array(
+        '#type' => 'select',
+        '#title' => t('Parameter to be overwrite.'),
+        '#options' => array(
+          'none' => t('none'),
+          'ga_public_status' => t('Public status'),
+          'gallery_assist_weight' => t('Gallery container weight'),
+          'show_title' => t('Show titles under thumbnails'),
+          'ga_align' => t('Teaser container align'),
+          'gap_align' => t('Page container align'),
+          't_ga_float' => t('Teaser container float'),
+          'p_ga_float' => t('Page container float'),
+          't_items_per_row' => t('Items per row in the teaser'),
+          'gallery_items_shadow' => t('Thumbnail shadow')
+        ),
+        '#default_value' => 'none',
+        '#description' => t('Select the settings parameter which should be overwriten on all nodes of this content type.')
+      );
+      $form["gallery_assist_{$type}_settings"][$type]['gallery_assist_ui_rebuild_operation']['gallery_assist_ui_rebuild_operation_node_type'] = array(
+        '#type' => 'hidden',
+        '#value' => $type
+      );
+      $form['#submit'][] = 'gallery_assist_ui_rebuild_operation';
+    }
+  }
+
+  if ($form_id == 'gallery_assist_settings_extras') {
+    $ga_ui_settings = variable_get("gallery_assist_ui_settings", array());
+    $form['gallery_assist_extras']['ga_ui'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('User interface'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#description' => t('Handle Gallery-Settings, -Add & edit items and -Sort-items in separated tabs on the following content types.'),
+      '#weight' => $form['gallery_assist_extras']['others']['#weight'] -1
+    );
+
+    foreach (gallery_assist_get_assignments(1) as $type => $tname) {
+      $form['gallery_assist_extras']['ga_ui']["gallery_assist_{$type}_ui_separed"] = array(
+        '#type' => 'checkbox',
+        '#title' => $tname,
+        '#default_value' => $ga_ui_settings[$type]
+      );
+      $form['gallery_assist_extras']['ga_ui']["gallery_assist_{$type}_ui_separed_old"] = array(
+        '#type' => 'hidden',
+        '#value' => $ga_ui_settings[$type]
+      );
+    }
+    $form['#submit'][] = 'gallery_assist_extras_ui_settings_submit';
+  }
+}
+
+function gallery_assist_extras_ui_settings_submit(&$form, $form_state) {
+  $i = 0;
+  foreach (gallery_assist_get_assignments(1) as $type => $tname) {
+    if ($form_state['values']["gallery_assist_{$type}_ui_separed"] != $form_state['values']["gallery_assist_{$type}_ui_separed_old"]) {
+      $ga_ui_settings[$type] = $form_state['values']["gallery_assist_{$type}_ui_separed"];
+      ++$i;
+    }
+  }
+  if ($i > 0) {
+    variable_set("gallery_assist_ui_settings", $ga_ui_settings);
+//    menu_rebuild();
+  }
+}
+
+/**
+ * Update gallery parameters to all nodes from an assignment.
+ *
+ * @param $form
+ *   an array containing the form data.
+ * @param $form_state
+ *   an array containing the processed sended data.
+ */
+function gallery_assist_ui_rebuild_operation(&$form, $form_state) {
+  if ($form_state['values']['gallery_assist_ui_rebuild_operation_parameter'] == 'none'
+      || empty($form_state['values']['gallery_assist_ui_rebuild_operation_parameter'])) {
+    return;
+  }
+
+  $q = "SELECT g.*, n.type FROM {gallery_assist} g JOIN {node} n ON g.nid = n.nid WHERE n.type = '%s'";
+  $type = $form_state['values']['gallery_assist_ui_rebuild_operation_node_type'];
+  $param = $form_state['values']['gallery_assist_ui_rebuild_operation_parameter'];
+  $value = $form_state['values']["gallery_assist_{$type}_{$param}"];
+  $result = db_query($q, $type);
+
+  while ($r = db_fetch_object($result)) {
+    $data = unserialize($r->data);
+    $data[$param] = $value;
+    $new_data = serialize($data);
+    if (isset($r->$param)) {
+      db_query("UPDATE {gallery_assist} SET {$param} = %d, data = '%s' WHERE gid = %d", $value, $new_data, $r->gid);
+    }
+    else {
+      db_query("UPDATE {gallery_assist} SET data = '%s' WHERE gid = %d", $new_data, $r->gid);
+    }
+
+  }
+
+  db_query("TRUNCATE TABLE {cache_gallery_assist_data}");
 }

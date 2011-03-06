@@ -1,5 +1,4 @@
 <?php
-// $Id: gallery_assist.install,v 1.1.2.31 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file
@@ -77,7 +76,7 @@ function gallery_assist_schema() {
         'not null' => TRUE,
         'default' => 0),
       'show_in_homepage_block' => array(
-        'description' => 'Image boxes shadow toggle.',
+        'description' => 'Show in users galleries block.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,

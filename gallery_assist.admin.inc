@@ -1,5 +1,4 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.1.2.34 2011/01/11 08:46:40 jcmc Exp $
 
 /**
  * @file
@@ -64,7 +63,7 @@ function gallery_assist_info_data() {
     '#weight' => 3,
   );
   $info['copy'] = array(
-    '#value' => '<div id="ga-devel-by">'. gallery_assist_copyright() .'</div>',
+    '#value' => '<div id="ga-devel-by">'. gallery_assist_info_line() .'</div>',
     '#weight' => 100,
   );
 
@@ -458,6 +457,14 @@ $test = module_invoke('image', 'image_get_presets');
       '#title' => t('Build aliases.'),
       '#description' => t('The module pathauto is activated. Check to build aliases from gallery items.'),
       '#default_value' => $settings['build_aliases'],
+    );
+
+    $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_others']['gallery_assist_'. $type .'_remove_all_aliases'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Remove aliases.'),
+      '#description' => t('Remove all existing alias of images from galleries of this content types.'),
+      '#default_value' => FALSE,
+      '#access' => $settings['build_aliases_disabled'] == 1,
       '#size' => 8
     );
   }
@@ -467,7 +474,7 @@ $test = module_invoke('image', 'image_get_presets');
     '#title' => t('Hide GA head notice'),
     '#default_value' => variable_get("hide_node_first_notice_for_{$type}", FALSE),
     '#description' => t('Hide the notice "This node must be saved FIRST ..." that appears on the top of the creation of a node. <br />If module "<a href="@mnb" target="_blank">More node buttos</a>" is installed and you have enabled the "<a href="@screens" target="_blank">Save and continue</a>" button is this notice not more necessary.', array('@mnb' => url('http://www.drupal.org/project/more_node_buttons'), '@screens' => url('http://www.assist-series.com/content/use-module-more-node-buttons-ga'))),
-    '#size' => 8
+    '#size' => 9
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_others']['gallery_assist_'. $type .'_ga_cover_sticky'] = array(
@@ -590,7 +597,7 @@ $test = module_invoke('image', 'image_get_presets');
     '#collapsed' => TRUE
   );
   $form['gallery_assist_'. $type .'_settings']['info']['content']  = gallery_assist_settings_info($type, $settings);
-  $form['gallery_assist_'. $type .'_settings']['#suffix'] .= '<div id="ga-devel-by">'. gallery_assist_copyright() .'</div>';
+  $form['gallery_assist_'. $type .'_settings']['#suffix'] .= '<div id="ga-devel-by">'. gallery_assist_info_line() .'</div>';
 
   if (module_exists('i18n')) {
     $form['gallery_assist_'. $type .'_settings'][$type]['localize_settings'] = array(
@@ -867,7 +874,7 @@ function gallery_assist_settings_extras() {
     '#value' => t('Save'),
   );
 
-  $form['gallery_assist_extras']['#suffix'] = '<div id="ga-devel-by">'. gallery_assist_copyright() .'</div>';
+  $form['gallery_assist_extras']['#suffix'] = '<div id="ga-devel-by">'. gallery_assist_info_line() .'</div>';
   $form['#submit'][] = 'gallery_assist_nodetypes_submit';
   $form['#validate'][] = 'gallery_assist_nodetypes_submit_validate';
 
@@ -974,7 +981,7 @@ function _gallery_assist_sizes_settings_form($type, $settings = array()) {
     '#title' => t('Force image height'),
     '#size' => 5,
     '#default_value' => $settings['force_image_height'],
-    '#access' => module_exists('imagecache') && variable_get('gallery_assist_use_imagecache', 0) == 1 ? TRUE : FALSE,
+    '#access' => variable_get('gallery_assist_use_imagecache', 0) == 1 ? TRUE : FALSE,
   );
 
   $form['gallery_assist_'. $type .'_sizes']['gallery_assist_'. $type .'_sizes']['gallery_assist_'. $type .'_lsizes']['gallery_assist_'. $type .'_disable_margin_top'] = array(
@@ -982,7 +989,7 @@ function _gallery_assist_sizes_settings_form($type, $settings = array()) {
     '#title' => t('Disable margin-top'),
     '#size' => 5,
     '#default_value' => $settings['disable_margin_top'],
-    '#access' => module_exists('imagecache') && variable_get('gallery_assist_use_imagecache', 0) == 1 ? TRUE : FALSE,
+    '#access' => variable_get('gallery_assist_use_imagecache', 0) == 1 ? TRUE : FALSE,
   );
 
   return $form;
@@ -1002,6 +1009,7 @@ function _gallery_assist_get_ic_settings_form($type, $settings) {
     '#title' => t('ImagaCache presets'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#description' => t('<a href="@link" title="Go to the ImageCache presets administration.">Manage ImageCache presets</a>.', array('@link' => url('admin/build/imagecache')))
   );
 
   $presets = imagecache_presets();
@@ -1176,6 +1184,11 @@ function _gallery_assist_settings_nodes($settings, $type) {
     '#default_value' => $settings['ga_public_status'],
     '#options' => array(0 => t('public'), 1 => t('privat') ,2 => t('public for all')),
     '#description' => theme('item_list', $h_li, NULL, 'ul'),
+  );
+  $form['common']['gallery_assist_'. $type .'_ga_public_status_updater'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Check to update the choosed status of all galleries from this content type.'),
+    '#default_value' => FALSE
   );
 
   $form['common']['gallery_assist_'. $type .'_gallery_assist_weight'] = array(

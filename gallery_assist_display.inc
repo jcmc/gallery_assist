@@ -1,5 +1,4 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.1.2.27 2011/01/12 10:20:07 jcmc Exp $
 
 /**
  * @file
