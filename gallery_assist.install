@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.48 2010/11/10 15:40:23 jcmc Exp $
+// $Id: gallery_assist.install,v 1.49 2010/12/01 16:10:08 jcmc Exp $
 
 /**
  * @file
@@ -91,6 +91,12 @@ function gallery_assist_schema() {
         'type' => 'text',
         'size' => 'big',
         'not null' => TRUE),
+      'items' => array(
+        'description' => 'Amount of images in the gallery.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
       ),
     'primary key' => array('gid'),
   );
@@ -392,7 +398,10 @@ function gallery_assist_install() {
     'ga_db_order' => 'ASC',
     // Update 5
     'ga_item_title_type' => 0,
-    'pager_align' => 'center'
+    'pager_align' => 'center',
+    // Update 6
+    't_thm_link_format' => 'item',
+    'ga_pager_show_pages' => TRUE
   );
 
   // Set the default variables and default values for gallery assist block gallery..
@@ -834,6 +843,37 @@ function gallery_assist_update_5() {
 
   $cq = "TRUNCATE TABLE {cache_gallery_assist_data}";
   db_query($cq);
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function gallery_assist_update_6() {
+  $ret = array();
+
+  // Add a identifier for the created path alias to the gallery items.
+  $db = array(
+    'items' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+      'description' => 'Amount of images in the gallery.',
+    )
+  );
+  db_add_field($ret, 'gallery_assist', 'items', $db['items']);
+
+  // Add new settings parameter.
+  $types = array('default' => 'Default');
+  $types += node_get_types('names');
+  foreach (array_keys($types) as $type) {
+    $settings = variable_get("gallery_assist_{$type}_data", array());
+    $settings['t_thm_link_format'] = 'item';
+    $settings['ga_pager_show_pages'] = TRUE;
+
+    variable_set("gallery_assist_{$type}_data", $settings);
+  }
 
   return $ret;
 }

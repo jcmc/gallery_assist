@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.41 2010/10/29 13:00:16 jcmc Exp $
+// $Id: gallery_assist.admin.inc,v 1.42 2010/12/01 16:10:08 jcmc Exp $
 
 /**
  * @file
@@ -37,9 +37,16 @@ function gallery_assist_info_data() {
     $info_file = drupal_parse_info_file(drupal_get_path('module', $r->name) .'/'. $r->name .'.info');
 
     if (!empty($info_file['name'])) {
+      if ($r->status == 1) {
+        $name = ga_bold($info_file['name'], $r->status);
+      }
+      else {
+        $name = ga_bold($info_file['name'], $r->status);
+        $name = l($name, 'admin/build/modules', array('fragment' => 'gallery_assist', 'attributes' => array('title' => 'Go to modules list to enable.')));
+      }
       $rows[] = array(
-        array('data' => ga_bold($info_file['name'], $r->status), 'class' => 'ga-nowrap'),
-        array('data' => $r->status == 1 ? 'enabled' : 'disabled'),
+        array('data' => $name, 'class' => 'ga-nowrap'),
+        array('data' => $r->status == 1 ? t('enabled') : t('disabled')),
         array('data' => $info_file['version'], 'class' => 'ga-nowrap'),
         array('data' => $info_file['description'], 'style' => 'ga-fullwidth')
       );
@@ -205,14 +212,6 @@ $test = module_invoke('image', 'image_get_presets');
     '#prefix' => '<div class="gallery-assist-settings-left-half">',
   );
 
-//  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['help_links']['gallery_assist_'. $type .'_show_title'] = array(
-//    '#type' => 'select',
-//    '#title' => t('Display titles'),
-//    '#options' => array(0 => t('off'), 1 => t('on')),
-//    '#default_value' => $settings['show_title'] ? $settings['show_title'] : 0,
-//    '#description' => $desc['layout']['show_title'],
-//  );
-
   $desc['layout']['title_substr'] = t('Adjust the length of the titles to the width of the miniatures.');
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['help_links']['gallery_assist_'. $type .'_title_substr'] = array(
     '#title' => t('Cut item title text for display'),
@@ -351,6 +350,14 @@ $test = module_invoke('image', 'image_get_presets');
     '#type' => 'select',
     '#options' => array(0 => t('full'), 1 => t('minimized')),
     '#description' => $desc['pager']['format'],
+    ////'#suffix' => '</div>',
+  );
+  $desc['pager']['show_pages'] = t('Extend the pager in the gallery in the page view (thumbnails view) with pages.');
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_pager']['gallery_assist_'. $type .'_ga_pager_show_pages'] = array(
+    '#title' => t('Extended pager'),
+    '#type' => 'checkbox',
+    '#default_value' => $settings['ga_pager_show_pages'],
+    '#description' => $desc['pager']['show_pages'],
     ////'#suffix' => '</div>',
   );
 
@@ -1276,6 +1283,18 @@ function _gallery_assist_settings_nodes($settings, $type) {
     '#title' => t('Hide container in teaser'),
     '#default_value' => $settings['hide_in_teaser'],
     '#description' => $help_string,
+  );
+
+  $form['layout']['teaser']['gallery_assist_'. $type .'_t_thm_link_format'] = array(
+    '#type' => 'select',
+    '#title' => t('Thumbnails hyperlinks'),
+    '#options' => array(
+      'none' => 'none',
+      'node' => 'linked to the Node',
+      'item' => 'linked to the Preview'
+    ),
+    '#default_value' => $settings['t_thm_link_format'],
+//    '#description' => $help_string,
   );
 
   $form['layout']['preview']['gallery_assist_'. $type .'_show_download_link'] = array(

@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_node_settings.inc,v 1.22 2010/10/30 14:28:02 jcmc Exp $
+// $Id: gallery_assist_node_settings.inc,v 1.23 2010/12/01 16:10:08 jcmc Exp $
 
 /**
  * @file
@@ -141,7 +141,7 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#type' => 'select',
     '#title' => t('Titles format'),
     '#options' => $toptions,
-    '#default_value' => $data['ga_item_title_type'],
+    '#default_value' => $node->gallconf[$node->type]['ga_item_title_type'],
     '#access' => $data['show_titles_allowed'] ? TRUE : FALSE,
   );
 
@@ -261,6 +261,24 @@ function gallery_assist_settings_tothis_node(&$node, $data) {
     '#default_value' => $node->gallconf[$node->type]['hide_in_teaser'],
     '#description' => $help_string,
     '#access' => $data['hide_teaser_container_allowed'],
+  );
+
+  $this['help']['t_thm_link_format'] = array(
+    'module' => 'gallery_assist',
+    'help_link' => 'gallery-assist-node-layout-settings',
+    'text' => t('Choos where should link the thumbnails in the teaser view.'),
+  );
+  $help_string = gallery_assist_advanced_help_builder($this['help']['t_thm_link_format']);
+  $form['layout']['teaser']['t_thm_link_format'] = array(
+    '#type' => 'select',
+    '#title' => t('Thumbnails hyperlinks'),
+    '#options' => array(
+      'none' => 'none',
+      'node' => 'linked to the Node',
+      'item' => 'linked to the Preview'
+    ),
+    '#default_value' => $node->gallconf[$node->type]['t_thm_link_format'],
+    '#description' => $help_string,
   );
 
   if ($data['show_download_link'] == 0 && $node->gallconf[$node->type]['show_download_link'] == 1) {

@@ -17,6 +17,7 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
 
   $conf = $node->gallconf[$node->type];
   $conf['show_title'] = 0;
+  $conf['opt'] = $opt;
 
   $my_teaser_count = 1;
 
@@ -200,9 +201,19 @@ function gallery_assist_display_list($node, $opt='', $owner='') {
   $extras['pager_style'] = implode(';', $pstl);
 
   if (count($my_boxes) > $node->gall_pager->show && $opt == 'page') {
-    $links = implode($my_separator, $link);
+    // ericpai implementation to emulate the drupal pager.
+    $page = (isset($_GET["page"])) ? $_GET["page"] : 1;
+    $pages = ceil((count($node->gallitems)) / ($my_page_count));
+
+    if ($conf['ga_pager_show_pages']) {
+      $links = gallery_assist_emulate_pager_pages($node, $page, $pages, $link);
+    }
+    else {
+      $links = implode($my_separator, $link);
+    }
+
     $node_light = new stdClass();
-    $pager .= theme('gallery_assist_pager', $node_light, $links, $extras);
+    $pager = theme('gallery_assist_pager', $node_light, $links, $extras);
   }
 
   $node->gallconf[$node->type]['my_attr'] = $node->gallconf[$node->type]['items_per_row'] == 'unlimited' ? '' : drupal_attributes($my_attr_array);
@@ -395,15 +406,28 @@ function gallery_assist_image_box_list($type, $item, $conf, $img) {
   $node->type = $type;
   $edit_link  = $user->uid == 1 || $user->uid == $item->uid || gallery_assist_check_access($node, 'edit') ? $elink : '';
 
-  $output  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
-  $output .= '  <div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
-  $output .= '  </div>'."\n";
-  $output .= '</div>'."\n";
+  // Build the teaser thumbnail links.
+  if ($conf['opt'] == 'teaser') {
+    switch ($conf['t_thm_link_format']) {
+      case 'none':
+        $thm_link = $my_img;
+        break;
+      case 'node':
+        $thm_link = l($my_img, 'node/'. $item->my_nid, array('html' => TRUE, 'query' => $link_query));
+        break;
+      case 'item':
+        $thm_link = l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
+        break;
+    }
+  }
+  else {
+    $thm_link = l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE, 'query' => $link_query));
+  }
 
   $output2  = '<div'. drupal_attributes($my_box_attr) .'>'."\n";
   $output2 .= '<div'. drupal_attributes($my_sheet_attr) .'>'."\n";
-  $output2 .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
+//  $output2 .= '    '. l($my_img, 'node/'. $item->my_nid .'/'. $item->pid, array('html' => TRUE));
+  $output2 .= '    '. $thm_link;
   $output2 .= '</div>'."\n";
   $output2 .= '</div>'."\n";
   $output2 .= '<div'. drupal_attributes($edit_link_attr) .'>'. $edit_link .'</div>'."\n";
