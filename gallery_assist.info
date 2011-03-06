@@ -4,9 +4,9 @@ description = Drupal content type with gallery functionality. <br /><a href="htt
 package = "Media"
 core = 6.x
 
-; Information added by drupal.org packaging script on 2010-05-18
-version = "6.x-1.12"
+; Information added by drupal.org packaging script on 2010-05-19
+version = "6.x-1.14"
 core = "6.x"
 project = "gallery_assist"
-datestamp = "1274222407"
+datestamp = "1274239208"
 

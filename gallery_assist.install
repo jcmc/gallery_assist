@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.37 2010/05/18 22:27:32 jcmc Exp $
+// $Id: gallery_assist.install,v 1.38 2010/05/19 03:08:56 jcmc Exp $
 
 /**
  * @file
@@ -268,7 +268,7 @@ function gallery_assist_schema() {
         'not null' => TRUE),
       'nid' => array(
         'description' => 'The primary identifier from the node.',
-        'type' => 'serial',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE),
       'ref' => array(
