@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.admin.inc,v 1.3 2009/10/13 19:37:27 jcmc Exp $
+// $Id: gallery_assist.admin.inc,v 1.5 2009/11/18 18:23:43 jcmc Exp $
 
 /**
  * @file
@@ -109,24 +109,59 @@ function gallery_assist_settings($form_state, $type = 'gallery_assist', $type_na
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_show_backlink'] = array(
     '#type' => 'select',
     '#title' => t('Back link'),
-    '#options' => array(0 => 'off', 1 => 'on'),
+    '#options' => array(0 => t('off'), 1 => t('on')),
     '#default_value' => $settings['show_backlink'],
     '#prefix' => '<div class="gallery-assist-settings-left">',
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_show_title'] = array(
+    '#type' => 'select',
+    '#title' => t('Display titles'),
+    '#options' => array(0 => t('off'), 1 => t('on')),
+    '#default_value' => $settings['show_title'] ? $settings['show_title'] : 0,
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_show_toggle'] = array(
     '#type' => 'select',
     '#title' => t('Title links toggle'),
-    '#options' => array(0 => 'off', 1 => 'on'),
+    '#options' => array(0 => t('off'), 1 => t('on')),
     '#default_value' => $settings['show_toggle'],
   );
 
   $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_position_toggle'] = array(
     '#type' => 'select',
     '#title' => t('Title links position'),
-    '#options' => array(0 => 'before body', 1 => 'after body'),
+    '#options' => array(0 => t('before body'), 1 => t('after body')),
     '#default_value' => $settings['position_toggle'],
     '#suffix' => '</div>',
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_gap_align'] = array(
+    '#type' => 'select',
+    '#title' => t('Pager align'),
+    '#options' => array(0 => t('off'), 1 => t('on')),
+    '#default_value' => $settings['gap_align'],
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_ga_align'] = array(
+    '#type' => 'select',
+    '#title' => t('Container align'),
+    '#options' => array(0 => t('off'), 1 => t('on')),
+    '#default_value' => $settings['ga_align'],
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_t_ga_float'] = array(
+    '#type' => 'select',
+    '#title' => t('Teaser-Container float'),
+    '#options' => array('none' => t('none'), 'left' => t('left'),'right'  => t('right')),
+    '#default_value' => $settings['t_ga_float'],
+  );
+
+  $form['gallery_assist_'. $type .'_settings'][$type]['gallery_assist_'. $type .'_layout']['gallery_assist_'. $type .'_p_ga_float'] = array(
+    '#type' => 'select',
+    '#title' => t('Page-Container float'),
+    '#options' => array('none' => t('none'), 'left' => t('left'),'right'  => t('right')),
+    '#default_value' => $settings['p_ga_float'],
   );
 
   // Pager.
@@ -224,6 +259,34 @@ function gallery_assist_settings_extras() {
     '#collapsed' => FALSE,
   );
 
+  //
+  $form['gallery_assist_extras']['gallery_assist_upload_conf'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Upload proccess'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Better only for experts.'),
+    '#weight' => -50,
+  );
+  $form['gallery_assist_extras']['gallery_assist_upload_conf']['gallery_assist_upload_method'] = array(
+    '#type' => 'select',
+    '#title' => t('Files save method'),
+    '#default_value' => variable_get('gallery_assist_upload_method', 1),
+    '#options' => array( 0 => t('Rename files'), 1 => t('Replace files')),
+    '#description' => 'If you choose "Replace files" existing files will be replaced by uploading files through the new file with the same name.<br>If you choose "Rename files" new files with same name as existing files will be renamed with a counter at the end.',
+    '#prefix' => '<div class="gallery-assist-settings-left">',
+    '#suffix' => '</div>',
+  );
+  $form['gallery_assist_extras']['gallery_assist_upload_conf']['gallery_assist_upload_name_filter'] = array(
+    '#type' => 'select',
+    '#title' => t('Files name filter'),
+    '#default_value' => variable_get('gallery_assist_upload_name_filter', 1),
+    '#options' => array(0 => t('none'), 1 => t('only alpha numeric'), 2 => t('alpha numeric & white spaces')),
+    '#description' => t('The filter "only alpha numeric" removes all symbols, except alphanumeric characters from the file name. The filter "alpha numeric & white spaces" removes all symbols, except alphanumeric characters and white spaces from the file name.'),
+    '#prefix' => '<div class="gallery-assist-settings-left">',
+    '#suffix' => '</div>',
+  );
+
   // Assigments
   if (user_access('administer gallery_assist')) {
     $form['gallery_assist_extras']['gallery_assist_assigments'] = array(
@@ -242,7 +305,7 @@ function gallery_assist_settings_extras() {
   if (module_exists('imce')) {
     $form['gallery_assist_extras']['gallery_assist_import_directories'] = array(
       '#type' => 'radios',
-      '#title' => '',
+      //'#title' => '',
       '#options' => $paths1,
     );
   }
@@ -379,7 +442,7 @@ function _gallery_assist_get_ic_settings_form($type, $settings) {
     '#title' => t('Thumbnail preset'),
     '#default_value' => $settings['thm_presetid'],
     '#options' => $options,
-    '#description' => t('Current used setting').': '. $settings['thm_presetname'],
+    '#description' => t('Current used setting: @thm_presetname', array('@thm_presetname' => $settings['prev_presetname'])),
   );
 
   $form['gallery_assist_'. $type .'_sizes']['gallery_assist_'. $type .'_sizes']['gallery_assist_'. $type .'_prev_presetid'] = array(

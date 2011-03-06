@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist.install,v 1.5 2009/10/13 19:37:27 jcmc Exp $
+// $Id: gallery_assist.install,v 1.7 2009/11/18 18:23:43 jcmc Exp $
 
 /**
  * @file
@@ -238,7 +238,7 @@ function gallery_assist_schema() {
         'not null' => TRUE,
         'default' => ''),
       'pdescription' => array(
-        'description' => 'The gallery name.',
+        'description' => 'The gallery description text.',
         'type' => 'text',
         'size' => 'big',
         'not null' => TRUE),
@@ -280,9 +280,14 @@ function gallery_assist_install() {
     'item_margin' => 10,
     'item_padding' => 20,
     'item_border' => 0,
-    'item_border_color' => '#EDF5FA',
+    'item_border_color' => '#027AC6',
     'show_backlink' => 0,
     'show_toggle' => 0,
+    'show_title' => 0,
+    'ga_align' => 'center',
+    'gap_align' => 'center',
+    't_ga_float' => 'none',
+    'p_ga_float' => 'none',
     'position_toggle' => 0,
     'title_substr' => 16,
     'pager_symbol' => 0,

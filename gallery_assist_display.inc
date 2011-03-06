@@ -1,5 +1,5 @@
 <?php
-// $Id: gallery_assist_display.inc,v 1.3 2009/10/13 19:37:27 jcmc Exp $
+// $Id: gallery_assist_display.inc,v 1.5 2009/11/18 18:23:43 jcmc Exp $
 
 /**
  * @file
@@ -119,6 +119,12 @@ function gallery_assist_display($node, $opt='', $owner='') {
     $links = implode($my_separator, $link);
     $pager .= theme('gallery_assist_pager', $links, $extras);
   }
+  
+  $my_attr_array = array(
+    'style' => 'width:'. $conf['container_width'] .'px',
+  );
+
+  $node->gallconf[$node->type]['$my_attr'] = $node->gallconf[$node->type]['items_per_row'] == 'unlimited' ? '' : drupal_attributes($my_attr_array);
 
   return theme('gallery_assist_display', $pager, $boxes, $node->gallconf[$node->type], $node->type);
 }
@@ -144,22 +150,23 @@ function gallery_assist_item_box($type, &$item, $conf, $img) {
     $my_item_attr['style'] .= 'margin:'. $conf['item_margin'] .'px;';
   }
 
-  $link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid); // , array('query' => '#'. $item->pid)
+  $link = l('edit', 'node/gallery_assist/'. $item->nid .'/'. $item->pid);
   $a_link = '<div id="image-box-'. $item->pid .'-links" class="'. $type .' image-box-links">[ '. $link .' ]</div>'."\n";
 
-  $ga_item_attr = drupal_attributes($my_item_attr);
-  $ga_edit_link = $user->uid == $item->uid ? $a_link : '';
-  $ga_item_box = gallery_assist_image_box($type, $item, $conf, $img);
+  $ga_item_attr  = drupal_attributes($my_item_attr);
+  $edit_link  = $user->uid == $item->uid ? $a_link : '';
+  $ga_item_box   = gallery_assist_image_box($type, $item, $conf, $img);
   $ga_item_title = $item->show_title == 1 && $conf['thumbnail_size'] >= 100 ? gallery_assist_title_box($item, $conf) : '';
-
+  $ga_edit_link  = $_GET['links'] == 'on' ? $edit_link : '';
+  
   $output = theme('gallery_assist_item_box', $ga_item_box, $ga_item_title, $ga_edit_link, $ga_item_attr);
 
   return $output;
 }
 
-function theme_gallery_assist_item_box($ga_item_box, $ga_item_title, $ga_edit_link, $ga_item_attr) {
+function theme_gallery_assist_item_box($ga_item_box, $ga_item_title, $ga_edit_link = '', $ga_item_attr) {
   $output  = '<div'. $ga_item_attr .'>'."\n";
-  $output .= $_GET['links'] == 'on' ? $ga_edit_link : '';
+  $output .= $ga_edit_link;
   $output .= $ga_item_box;
   $output .= $ga_item_title;
   $output .= '</div>'."\n";
@@ -264,12 +271,8 @@ function gallery_assist_title_box(&$item, $conf) {
  * Theme the item output.
  */
 function theme_gallery_assist_display(&$pager, &$boxes, $conf, $type = 'gallery_assist') {
-  $my_attr_array = array(
-    'style' => 'width:'. $conf['container_width'] .'px',
-  );
-
-  $my_attr = $conf['items_per_row'] == 'unlimited' ? '' : drupal_attributes($my_attr_array);
-  $output  = '<div id="gallery-container" class="'. $type .' gallery-container '. $conf['op'] .' clear-block"'. $my_attr .'>';
+  
+  $output  = '<div id="gallery-container" class="'. $type .' gallery-container '. $conf['op'] .' clear-block"'. $conf['$my_attr'] .'>';
   $output .= $conf['pager_position'] == 'top' || $conf['pager_position'] == 'both' ? $pager : '';
   $output .= $boxes;
   $output .= $conf['pager_position'] == 'bottom' || $conf['pager_position'] == 'both' ? $pager : '';
